@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "gruv-bg": "#fbf1c7",
+              "gruv-bg-soft": "#f2e5bc",
+              "gruv-fg": "#3c3836",
+              "gruv-blue": "#458588",
+              "gruv-gray": "#928374",
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body
+    class="bg-gruv-bg text-gruv-fg h-screen flex items-center justify-center"
+  >
+    <div
+      class="w-full max-w-2xl h-full flex flex-col bg-gruv-bg-soft shadow-lg rounded-lg"
+    >
+      <div
+        class="bg-gruv-gray text-gruv-bg p-4 text-center text-xl font-semibold rounded-t-lg"
+      >
+        <h1>WebSocket Chat</h1>
+      </div>
+      <div
+        id="messages"
+        class="flex-grow p-4 overflow-y-auto flex flex-col space-y-2"
+      >
+        <!-- Messages will be appended here -->
+      </div>
+      <div class="p-4 bg-gruv-bg-soft rounded-b-lg">
+        <form id="form" action="" class="flex">
+          <input
+            id="messageText"
+            autocomplete="off"
+            class="flex-grow p-2 bg-gruv-bg border border-gruv-gray rounded-l-lg focus:outline-none focus:ring-2 focus:ring-gruv-blue"
+            placeholder="Type your message..."
+          />
+          <button
+            class="bg-gruv-blue text-gruv-bg px-4 py-2 rounded-r-lg hover:bg-opacity-90 transition-colors"
+          >
+            Send
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+  </body>
+</html>
