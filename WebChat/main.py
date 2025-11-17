@@ -1,4 +1,6 @@
-# run ./venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+# create venv -> python -m venv venv
+# download dependendancies -> venv/bin/pip install -r requirements.txt
+# run in terminal -> ./venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
 
 import random
 import json
