@@ -1,5 +1,7 @@
 # Mini Projects
 
+[View Live Projects](https://gyro-uyt.github.io/Projects/)
+
 This repository contains a collection of mini-projects developed in various languages.
 
 ## Projects
