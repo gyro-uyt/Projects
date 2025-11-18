@@ -78,7 +78,7 @@ function startGame() {
     gameBackground();
     updateSnake();
     drawSnakeAndFood();
-  }, 25);
+  }, 200);
 }
 
 function displayGameOver() {

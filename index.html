@@ -1,67 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Projects</title>
-    <link rel="icon" href="Assets/favicon.ico">
-    <link rel="stylesheet" href="Assets/css/style.css">
-</head>
-<body class="dark-theme">
+    <link rel="icon" href="Assets/favicon.ico" />
+    <link rel="stylesheet" href="Assets/css/style.css" />
+  </head>
+  <body class="dark-theme">
     <header>
-        <div class="theme-switcher-container">
-            <button id="theme-switcher">
-                <svg id="theme-icon-light" class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-14.66l-.707.707M4.04 19.96l-.707.707M21 12h-1M4 12H3m14.66 8.66l-.707-.707M4.04 4.04l-.707-.707" />
-                </svg>
-                <svg id="theme-icon-dark" class="icon hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
-            </button>
-        </div>
-        <h1>My Mini Projects</h1>
-        <p>A collection of my small projects.</p>
+      <div class="theme-switcher-container">
+        <button id="theme-switcher">
+          <svg
+            id="theme-icon-light"
+            class="icon"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 3v1m0 16v1m8.66-14.66l-.707.707M4.04 19.96l-.707.707M21 12h-1M4 12H3m14.66 8.66l-.707-.707M4.04 4.04l-.707-.707"
+            />
+          </svg>
+          <svg
+            id="theme-icon-dark"
+            class="icon hidden"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+            />
+          </svg>
+        </button>
+      </div>
+      <h1>My Mini Projects</h1>
+      <p>A collection of my small projects.</p>
     </header>
 
     <main class="project-grid">
-        <div class="card">
-            <h2>WebChat</h2>
-            <p>A real-time web chat application built using FastAPI (Python) for the backend and HTML, CSS, and JavaScript for the frontend.</p>
-            <a href="WebChat/index.html">View Project</a>
-        </div>
-        <div class="card">
-            <h2>Snake.oink</h2>
-            <p>A classic snake game.</p>
-            <a href="Snake.oink/index.html">View Project</a>
-        </div>
+      <div class="card">
+        <h2>WebChat</h2>
+        <p>
+          A real-time web chat application built using FastAPI (Python) for the
+          backend and HTML, CSS, and JavaScript for the frontend.
+        </p>
+        <a href="WebChat/index.html">View Project</a>
+      </div>
+      <div class="card">
+        <h2>Snape.oink</h2>
+        <p>
+          A classic snake game built using canvas module with some Js scripting.
+        </p>
+        <a href="Snape.oink/src/index.html">View Project</a>
+      </div>
     </main>
 
     <footer>
-        <p>Find me on <a href="https://github.com/gyro-uyt">GitHub</a></p>
+      <p>Find me on <a href="https://github.com/gyro-uyt">GitHub</a></p>
     </footer>
     <script>
-        const themeSwitcher = document.getElementById('theme-switcher');
-        const body = document.body;
-        const lightIcon = document.getElementById('theme-icon-light');
-        const darkIcon = document.getElementById('theme-icon-dark');
+      const themeSwitcher = document.getElementById("theme-switcher");
+      const body = document.body;
+      const lightIcon = document.getElementById("theme-icon-light");
+      const darkIcon = document.getElementById("theme-icon-dark");
 
-        themeSwitcher.addEventListener('click', () => {
-            body.classList.toggle('light-theme');
-            body.classList.toggle('dark-theme');
+      themeSwitcher.addEventListener("click", () => {
+        body.classList.toggle("light-theme");
+        body.classList.toggle("dark-theme");
 
-            const isLightTheme = body.classList.contains('light-theme');
-            lightIcon.classList.toggle('hidden', !isLightTheme);
-            darkIcon.classList.toggle('hidden', isLightTheme);
-        });
+        const isLightTheme = body.classList.contains("light-theme");
+        lightIcon.classList.toggle("hidden", !isLightTheme);
+        darkIcon.classList.toggle("hidden", isLightTheme);
+      });
 
-        // Set initial icon state
-        if (body.classList.contains('light-theme')) {
-            lightIcon.classList.remove('hidden');
-            darkIcon.classList.add('hidden');
-        } else {
-            darkIcon.classList.remove('hidden');
-            lightIcon.classList.add('hidden');
-        }
+      // Set initial icon state
+      if (body.classList.contains("light-theme")) {
+        lightIcon.classList.remove("hidden");
+        darkIcon.classList.add("hidden");
+      } else {
+        darkIcon.classList.remove("hidden");
+        lightIcon.classList.add("hidden");
+      }
     </script>
-</body>
+  </body>
 </html>
