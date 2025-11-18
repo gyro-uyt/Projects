@@ -1,0 +1,38 @@
+# Build files
+*.out
+*.o
+*.exe
+*.obj
+*.log
+
+
+# Backup and temporary files
+*~
+*.swp
+*.bak
+
+# Editor specific
+.vscode/
+.idea/
+*.code-workspace
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Your encrypted data (optional)
+# data/*.txt
+data/*.dat
+data/*.enc
+
+# Notes if private
+# notes/*.md
+# notes/*.txt
+
+# Ignore all files without an extension
+.*
+
+# Allow hidden necessary files
+!.gitignore
+!.github/
+
