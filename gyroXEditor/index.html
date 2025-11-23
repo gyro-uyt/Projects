@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+    <title>gyroX Studio v4.2</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Python Engine -->
+    <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
+
+    <!-- Syntax Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    
+    <!-- Formatter -->
+    <script src="https://unpkg.com/prettier@2.8.8/standalone.js"></script>
+    <script src="https://unpkg.com/prettier@2.8.8/parser-babel.js"></script>
+    <script src="https://unpkg.com/prettier@2.8.8/parser-html.js"></script>
+
+    <style>
+        /* Base Styles */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #1e1e1e; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+        body { overscroll-behavior-y: none; }
+        
+        .code-layout {
+            display: flex; height: 100%; position: relative; background-color: #2d2d2d; align-items: stretch;
+        }
+
+        /* Editor & Lines */
+        .line-numbers {
+            width: 38px; background-color: #262626; color: #666; text-align: right;
+            padding-top: 20px; padding-right: 8px; flex-shrink: 0; border-right: 1px solid #333;
+            font-family: 'Fira Code', Consolas, monospace !important; font-size: 14px !important; line-height: 21px !important;
+            user-select: none; white-space: pre;
+        }
+        .editor-wrapper { flex: 1; position: relative; overflow: auto; }
+        #editor {
+            font-family: 'Fira Code', Consolas, monospace !important; font-size: 14px !important; line-height: 21px !important;
+            min-height: 100%; padding: 20px 10px; color: #ccc; tab-size: 4; outline: none; white-space: pre; caret-color: #00e5ff;
+        }
+        code[class*="language-"], pre[class*="language-"] {
+            font-family: 'Fira Code', Consolas, monospace !important; font-size: inherit !important; line-height: inherit !important; text-shadow: none !important;
+        }
+
+        /* AUTOCOMPLETE STYLES */
+        #suggestionBox {
+            position: fixed;
+            background-color: #252525;
+            border: 1px solid #444;
+            border-radius: 6px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            z-index: 1000;
+            max-height: 160px;
+            width: 180px;
+            overflow-y: auto;
+            display: none;
+            font-family: 'Fira Code', monospace;
+        }
+        .suggestion-item {
+            padding: 6px 12px;
+            font-size: 13px;
+            color: #aaa;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+        .suggestion-item:hover, .suggestion-item.active {
+            background-color: #0e7490; /* Cyan-700 */
+            color: #fff;
+            border-left: 3px solid #22d3ee; /* Cyan-400 */
+        }
+        .suggestion-type {
+            float: right;
+            font-size: 10px;
+            opacity: 0.5;
+            margin-top: 2px;
+        }
+
+        /* UI Elements */
+        .quick-toolbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .quick-toolbar::-webkit-scrollbar { display: none; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .status-ready { background-color: #4ade80; box-shadow: 0 0 5px #4ade80; }
+        .status-busy { background-color: #facc15; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .icon-btn { @apply p-2 rounded-lg text-gray-400 hover:text-white hover:bg-[#333] transition-all active:scale-95 flex items-center justify-center; height: 36px; width: 36px; }
+    </style>
+</head>
+<body class="bg-[#1e1e1e] text-gray-200 h-[100dvh] flex flex-col font-sans overflow-hidden">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between px-2 bg-[#181818] border-b border-[#333] shrink-0 z-20 shadow-md h-14">
+        <div class="flex items-center gap-2">
+            <div id="statusDot" class="status-dot status-ready ml-1"></div>
+            <h1 class="text-lg font-bold tracking-wide text-white ml-1"><span class="text-cyan-400">gyro</span>X</h1>
+        </div>
+        <div class="flex items-center justify-end gap-1">
+            <div class="relative">
+                <button id="langTrigger" class="flex items-center gap-1 bg-[#2a2a2a] hover:bg-[#333] text-gray-200 pl-2 pr-2 rounded-lg border border-[#444] active:scale-95 h-9 mr-1">
+                     <span id="currentLangIcon" class="w-4 h-4 flex items-center justify-center"><svg viewBox="0 0 48 48" class="w-4 h-4"><path fill="#FFD600" d="M6 6h36v36H6z"/><path fill="#000" d="M21.8 32.7c0 3.2-2.6 5.8-5.8 5.8-2.1 0-3.8-1.1-4.8-2.7l2.6-1.5c.5.8 1.3 1.3 2.2 1.3 1.5 0 2.6-1.1 2.6-2.6V22h3.2v10.7zm11.6-5.6v1.7c0 3.5-2.8 6.3-6.3 6.3-2.3 0-4.4-1.2-5.5-3.2l2.6-1.6c.6 1.1 1.7 1.7 2.9 1.7 1.7 0 3.1-1.3 3.1-3s-1.4-3-3.1-3c-1.5 0-2.8-.7-3.6-1.8-.8-1.1-1.2-2.5-1.2-4 0-3.3 2.6-5.9 5.9-5.9 2.1 0 4 .9 5.2 2.5l-2.4 1.6c-.6-.9-1.6-1.4-2.7-1.4-1.6 0-2.8 1.2-2.8 2.8 0 1.5 1.2 2.7 2.8 2.7 2.9 0 5.1 2.4 5.1 5.6z"/></svg></span>
+                     <span id="currentLangName" class="text-xs font-bold tracking-wide">JS</span>
+                     <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="langMenu" class="absolute top-full right-0 mt-2 w-32 bg-[#252525] border border-[#444] rounded-xl shadow-2xl z-50 hidden overflow-hidden">
+                    <button data-lang="js" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#333] text-left text-sm text-gray-300 hover:text-white border-b border-[#333]">Js</button>
+                    <button data-lang="python" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#333] text-left text-sm text-gray-300 hover:text-white border-b border-[#333]">Python</button>
+                    <button data-lang="html" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#333] text-left text-sm text-gray-300 hover:text-white">HTML5</button>
+                </div>
+            </div>
+            <button id="clearCodeBtn" class="icon-btn hidden md:flex" title="Clear Code"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+            <button id="formatBtn" class="icon-btn hidden md:flex" title="Format Code"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg></button>
+            <button id="runBtn" class="ml-1 bg-gradient-to-r from-cyan-600 to-blue-600 active:from-cyan-700 active:to-blue-700 text-white px-3 py-1.5 rounded-full font-bold text-xs transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-cyan-900/50 h-9">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg> RUN
+            </button>
+            <button id="menuBtn" class="icon-btn ml-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg></button>
+        </div>
+
+        <div id="menuDropdown" class="absolute top-16 right-2 w-48 bg-[#252525] border border-[#444] rounded-xl shadow-2xl z-50 hidden flex flex-col py-2 overflow-hidden">
+            <div class="px-4 py-2 border-b border-[#333]">
+                <div class="text-xs text-gray-500 uppercase font-bold mb-2">Font Size</div>
+                <div class="flex items-center justify-between bg-[#1a1a1a] rounded-lg p-1 border border-[#333]">
+                    <button id="fontDec" class="w-8 h-6 flex items-center justify-center hover:bg-[#333] rounded text-gray-300 active:scale-90">-</button>
+                    <span id="fontSizeDisplay" class="text-xs font-mono text-cyan-400">14px</span>
+                    <button id="fontInc" class="w-8 h-6 flex items-center justify-center hover:bg-[#333] rounded text-gray-300 active:scale-90">+</button>
+                </div>
+            </div>
+            <button id="mobileFormatBtn" class="md:hidden px-4 py-3 text-left text-sm text-gray-200 hover:bg-[#333] flex items-center gap-3 border-b border-[#333]"><svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg> Format Code</button>
+            <button id="mobileClearBtn" class="md:hidden px-4 py-3 text-left text-sm text-gray-200 hover:bg-[#333] flex items-center gap-3 border-b border-[#333]"><svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg> Clear Code</button>
+            <button id="saveFileBtn" class="px-4 py-3 text-left text-sm text-gray-200 hover:bg-[#333] flex items-center gap-3"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg> Save File</button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+        <div class="flex-1 flex flex-col h-3/5 md:h-full border-b md:border-b-0 md:border-r border-[#333] relative">
+            <div class="code-layout">
+                <div id="lineNumbers" class="line-numbers">1</div>
+                <div id="editorWrapper" class="editor-wrapper">
+                    <div id="editor" class="language-javascript" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></div>
+                </div>
+            </div>
+            <!-- Autocomplete Dropdown -->
+            <div id="suggestionBox"></div>
+        </div>
+
+        <div class="flex-1 flex flex-col h-2/5 md:h-full bg-[#121212]">
+            <div class="flex border-b border-[#333] bg-[#181818] text-xs uppercase tracking-wider font-semibold text-gray-500">
+                <button id="tabConsole" class="px-4 py-2 hover:bg-[#222] border-b-2 border-cyan-500 text-gray-200 transition-colors">Console</button>
+                <button id="tabPreview" class="px-4 py-2 hover:bg-[#222] border-b-2 border-transparent transition-colors hidden">Preview</button>
+                <button id="clearConsoleBtn" class="ml-auto px-4 py-2 hover:text-red-400 normal-case">Clear</button>
+            </div>
+            <div id="consoleContainer" class="flex-1 overflow-auto p-4 font-mono text-sm whitespace-pre-wrap break-words pb-10">
+                <div class="text-gray-600 italic mb-2 select-none">Ready.</div>
+            </div>
+            <iframe id="previewFrame" class="hidden w-full h-full bg-white border-none"></iframe>
+        </div>
+    </main>
+
+    <div class="quick-toolbar flex items-center gap-2 px-2 py-2 bg-[#1f1f1f] border-t border-[#333] overflow-x-auto shrink-0 z-40 h-12 w-full">
+        <button onmousedown="event.preventDefault()" onclick="insertSymbol('{')" class="min-w-[40px] h-8 bg-[#333] rounded text-cyan-400 font-mono text-sm active:bg-[#444]">{</button>
+        <button onmousedown="event.preventDefault()" onclick="insertSymbol('}')" class="min-w-[40px] h-8 bg-[#333] rounded text-cyan-400 font-mono text-sm active:bg-[#444]">}</button>
+        <button onmousedown="event.preventDefault()" onclick="insertSymbol('(')" class="min-w-[40px] h-8 bg-[#333] rounded text-cyan-400 font-mono text-sm active:bg-[#444]">(</button>
+        <button onmousedown="event.preventDefault()" onclick="insertSymbol(')')" class="min-w-[40px] h-8 bg-[#333] rounded text-cyan-400 font-mono text-sm active:bg-[#444]">)</button>
+        <button onmousedown="event.preventDefault()" onclick="insertSymbol('[')" class="min-w-[40px] h-8 bg-[#333] rounded text-cyan-400 font-mono text-sm active:bg-[#444]">[</button>
+        <button onmousedown="event.preventDefault()" onclick="insertSymbol(']')" class="min-w-[40px] h-8 bg-[#333] rounded text-cyan-400 font-mono text-sm active:bg-[#444]">]</button>
+        <button onmousedown="event.preventDefault()" onclick="insertSymbol('=')" class="min-w-[40px] h-8 bg-[#333] rounded text-cyan-400 font-mono text-sm active:bg-[#444]">=</button>
+        <button onmousedown="event.preventDefault()" onclick="insertSymbol(';')" class="min-w-[40px] h-8 bg-[#333] rounded text-cyan-400 font-mono text-sm active:bg-[#444]">;</button>
+        <div class="w-[1px] h-6 bg-[#444] mx-1"></div>
+        <button onmousedown="event.preventDefault()" onclick="insertSnippet('log')" class="px-3 h-8 bg-[#2d2d2d] border border-[#444] rounded text-gray-300 font-mono text-xs">log</button>
+        <button onmousedown="event.preventDefault()" onclick="insertSnippet('func')" class="px-3 h-8 bg-[#2d2d2d] border border-[#444] rounded text-gray-300 font-mono text-xs">func</button>
+        <button onmousedown="event.preventDefault()" onclick="insertSnippet('if')" class="px-3 h-8 bg-[#2d2d2d] border border-[#444] rounded text-gray-300 font-mono text-xs">if</button>
+        <button onmousedown="event.preventDefault()" id="colorPickerBtn" class="px-3 h-8 bg-[#2d2d2d] border border-[#444] rounded text-gray-300 font-mono text-xs">Color</button>
+    </div>
+
+    <script type="module">
+        import { CodeJar } from 'https://cdn.jsdelivr.net/npm/codejar@3.7.0/codejar.js';
+        const editorElement = document.getElementById('editor');
+        const lineNumbersEl = document.getElementById('lineNumbers');
+        const editorWrapper = document.getElementById('editorWrapper');
+        
+        editorWrapper.addEventListener('scroll', () => { lineNumbersEl.scrollTop = editorWrapper.scrollTop; });
+        const updateLineNumbers = (code) => {
+            const lines = code.split('\n').length;
+            let html = ''; for(let i=1; i<=lines; i++) { html += `${i}\n`; }
+            lineNumbersEl.innerText = html;
+        };
+        const highlight = (editor) => {
+            let code = editor.textContent;
+            updateLineNumbers(code);
+            const lang = window.getCurrentLang ? window.getCurrentLang() : 'javascript';
+            editor.innerHTML = Prism.highlight(code, Prism.languages[lang] || Prism.languages.python, lang);
+        };
+        window.jar = CodeJar(editorElement, highlight, { tab: '    ', indentOn: /[(\[{]$/ });
+        window.updateLines = () => updateLineNumbers(editorElement.textContent);
+    </script>
+
+    <script>
+        // --- AUTOCOMPLETE LOGIC START ---
+        const suggestionBox = document.getElementById('suggestionBox');
+        let currentSuggestions = [];
+        let activeIndex = 0;
+        
+        const KEYWORDS = {
+            js: [
+                'function', 'return', 'var', 'let', 'const', 'if', 'else', 'for', 'while', 'switch', 'case', 'break', 'continue',
+                'console', 'log', 'error', 'warn', 'document', 'window', 'getElementById', 'querySelector', 'addEventListener',
+                'JSON', 'parse', 'stringify', 'Math', 'random', 'floor', 'ceil', 'push', 'pop', 'map', 'filter', 'reduce', 'length',
+                'import', 'export', 'from', 'class', 'constructor', 'this', 'new', 'async', 'await', 'try', 'catch', 'throw'
+            ],
+            python: [
+                'def', 'return', 'print', 'if', 'elif', 'else', 'for', 'in', 'while', 'break', 'continue', 'pass',
+                'import', 'from', 'as', 'class', 'try', 'except', 'finally', 'raise', 'with', 'open', 'True', 'False', 'None',
+                'len', 'range', 'list', 'dict', 'set', 'int', 'str', 'float', 'append', 'split', 'join', 'strip'
+            ],
+            html: [
+                'div', 'span', 'h1', 'h2', 'p', 'a', 'img', 'ul', 'li', 'table', 'tr', 'td', 'th', 'form', 'input', 'button',
+                'class', 'id', 'style', 'src', 'href', 'onclick', 'type', 'placeholder', 'value', 'width', 'height', 'meta', 'head', 'body', 'html', 'script', 'link'
+            ]
+        };
+
+        function getCaretCoordinates() {
+            const selection = window.getSelection();
+            if (selection.rangeCount !== 0) {
+                const range = selection.getRangeAt(0).cloneRange();
+                range.collapse(true);
+                const rect = range.getClientRects()[0];
+                if (rect) return { x: rect.left, y: rect.bottom + window.scrollY };
+            }
+            return null;
+        }
+
+        function getCurrentWord() {
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return '';
+            const range = selection.getRangeAt(0);
+            const text = range.startContainer.textContent || '';
+            const beforeCursor = text.substring(0, range.startOffset);
+            const match = beforeCursor.match(/([a-zA-Z0-9_]+)$/);
+            return match ? match[0] : '';
+        }
+
+        function showSuggestions(list) {
+            if (list.length === 0) {
+                suggestionBox.style.display = 'none';
+                return;
+            }
+            const coords = getCaretCoordinates();
+            if (!coords) return;
+
+            suggestionBox.innerHTML = '';
+            currentSuggestions = list;
+            activeIndex = 0;
+
+            list.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                if (index === 0) div.classList.add('active');
+                div.innerHTML = `${item}<span class="suggestion-type">key</span>`;
+                div.onmousedown = (e) => {
+                    e.preventDefault(); // Prevent focus loss
+                    insertSuggestion(item);
+                };
+                suggestionBox.appendChild(div);
+            });
+
+            let left = coords.x;
+            if (left + 180 > window.innerWidth) left = window.innerWidth - 190;
+
+            suggestionBox.style.left = `${left}px`;
+            suggestionBox.style.top = `${coords.y}px`;
+            suggestionBox.style.display = 'block';
+        }
+
+        function insertSuggestion(word) {
+            const selection = window.getSelection();
+            if (selection.rangeCount === 0) return;
+
+            const current = getCurrentWord();
+            const range = selection.getRangeAt(0);
+            
+            // 1. Adjust range to select the partial word typed so far
+            if (current.length > 0) {
+                // Move start back by length of current word
+                const startOffset = Math.max(0, range.startOffset - current.length);
+                range.setStart(range.startContainer, startOffset);
+            }
+            
+            // 2. Select that range (so insertText replaces it)
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            // 3. Replace selection with new word
+            document.execCommand('insertText', false, word);
+            
+            suggestionBox.style.display = 'none';
+            editorDiv.focus();
+        }
+
+        const editorDiv = document.getElementById('editor');
+        
+        editorDiv.addEventListener('input', () => {
+            const word = getCurrentWord();
+            if (word.length < 1) {
+                suggestionBox.style.display = 'none';
+                return;
+            }
+            const lang = currentAppLang === 'javascript' ? 'js' : currentAppLang;
+            const dict = KEYWORDS[lang] || KEYWORDS.js;
+            const matches = dict.filter(k => k.startsWith(word) && k !== word).slice(0, 8);
+            showSuggestions(matches);
+        });
+
+        editorDiv.addEventListener('keydown', (e) => {
+            if (suggestionBox.style.display === 'block') {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    activeIndex = (activeIndex + 1) % currentSuggestions.length;
+                    updateActiveSuggestion();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    activeIndex = (activeIndex - 1 + currentSuggestions.length) % currentSuggestions.length;
+                    updateActiveSuggestion();
+                } else if (e.key === 'Enter' || e.key === 'Tab') {
+                    e.preventDefault();
+                    insertSuggestion(currentSuggestions[activeIndex]);
+                } else if (e.key === 'Escape') {
+                    suggestionBox.style.display = 'none';
+                }
+            }
+        });
+
+        function updateActiveSuggestion() {
+            const items = suggestionBox.children;
+            for (let i = 0; i < items.length; i++) items[i].classList.remove('active');
+            if (items[activeIndex]) {
+                items[activeIndex].classList.add('active');
+                items[activeIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+        // --- AUTOCOMPLETE LOGIC END ---
+
+        // --- APP LOGIC ---
+        const runBtn = document.getElementById('runBtn');
+        const statusDot = document.getElementById('statusDot');
+        const consoleContainer = document.getElementById('consoleContainer');
+        const tabConsole = document.getElementById('tabConsole');
+        const tabPreview = document.getElementById('tabPreview');
+        const previewFrame = document.getElementById('previewFrame');
+        
+        const langTrigger = document.getElementById('langTrigger');
+        const langMenu = document.getElementById('langMenu');
+        const menuBtn = document.getElementById('menuBtn');
+        const menuDropdown = document.getElementById('menuDropdown');
+        
+        const currentLangName = document.getElementById('currentLangName');
+        const currentLangIcon = document.getElementById('currentLangIcon');
+
+        let currentAppLang = 'js';
+        let isAppRunning = false;
+        let activeAppWorker = null;
+        let currentAppFontSize = 14;
+        
+        const DEFAULTS = { js: ``, python: ``, html: `` };
+
+        langTrigger.addEventListener('click', (e) => { e.stopPropagation(); langMenu.classList.toggle('hidden'); menuDropdown.classList.add('hidden'); });
+        menuBtn.addEventListener('click', (e) => { e.stopPropagation(); menuDropdown.classList.toggle('hidden'); langMenu.classList.add('hidden'); });
+        document.addEventListener('click', (e) => {
+            if (!langMenu.contains(e.target) && !langTrigger.contains(e.target)) langMenu.classList.add('hidden');
+            if (!menuDropdown.contains(e.target) && !menuBtn.contains(e.target)) menuDropdown.classList.add('hidden');
+            if (suggestionBox.style.display === 'block' && !suggestionBox.contains(e.target)) suggestionBox.style.display = 'none';
+        });
+
+        document.querySelectorAll('#langMenu button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const lang = btn.dataset.lang;
+                selectLang(lang);
+                langMenu.classList.add('hidden');
+            });
+        });
+
+        window.getCurrentLang = () => (currentAppLang === 'js' ? 'javascript' : currentAppLang);
+
+        function selectLang(lang) {
+            loadCode(lang);
+            let name = 'JS'; let icon = '';
+            if(lang === 'js') { name = 'JS'; icon = '<svg viewBox="0 0 48 48" class="w-4 h-4"><path fill="#FFD600" d="M6 6h36v36H6z"/><path fill="#000" d="M21.8 32.7c0 3.2-2.6 5.8-5.8 5.8-2.1 0-3.8-1.1-4.8-2.7l2.6-1.5c.5.8 1.3 1.3 2.2 1.3 1.5 0 2.6-1.1 2.6-2.6V22h3.2v10.7zm11.6-5.6v1.7c0 3.5-2.8 6.3-6.3 6.3-2.3 0-4.4-1.2-5.5-3.2l2.6-1.6c.6 1.1 1.7 1.7 2.9 1.7 1.7 0 3.1-1.3 3.1-3s-1.4-3-3.1-3c-1.5 0-2.8-.7-3.6-1.8-.8-1.1-1.2-2.5-1.2-4 0-3.3 2.6-5.9 5.9-5.9 2.1 0 4 .9 5.2 2.5l-2.4 1.6c-.6-.9-1.6-1.4-2.7-1.4-1.6 0-2.8 1.2-2.8 2.8 0 1.5 1.2 2.7 2.8 2.7 2.9 0 5.1 2.4 5.1 5.6z"/></svg>'; } 
+            else if (lang === 'python') { name = 'Py'; icon = '<svg viewBox="0 0 128 128" class="w-4 h-4"><path fill="#4584b6" d="M64.6 16.7c-5.8-.1-11.9.7-16.3 2.6C33 25.8 33 34.2 33 34.2h17v4.6h-33c-4.8 0-9.7 2.9-11.5 7.2-2 4.9-1.8 10.3-1.8 10.3s-.2 24.4 0 25.2c.3 11.7 6.4 13.4 14.4 13.4h6.4v-19c0-6.4 5.1-12 11.5-12.2h25.2c1.1 0 2.1-.9 2.1-2V38.1c0-10.5-9.7-21.1-23.7-21.4zM44.9 26.8c2.4 0 4.4 2 4.4 4.4 0 2.4-2 4.4-4.4 4.4-2.4 0-4.4-2-4.4-4.4 0-2.4 2-4.4 4.4-4.4z"/><path fill="#ffde57" d="M82 38.8H56.8c-1.1 0-2.1.9-2.1 2V62c0 10.5 9.7 21.1 23.7 21.4 5.8.1 11.9-.7 16.3-2.6 15.3-6.5 15.3-14.9 15.3-14.9H93v-4.6h33c4.8 0 9.7-2.9 11.5-7.2 2-4.9 1.8-10.3 1.8-10.3s.2-24.4 0-25.2c-.3-11.7-6.4-13.4-14.4-13.4h-6.4v19c0 6.4-5.1 12-11.5 12.2zm38.2 74.4c-2.4 0-4.4-2-4.4-4.4 0-2.4 2-4.4 4.4-4.4 2.4 0 4.4 2 4.4 4.4 0 2.4-2 4.4-4.4 4.4z"/></svg>'; } 
+            else { name = 'HTML'; icon = '<svg viewBox="0 0 512 512" class="w-4 h-4"><path fill="#E34F26" d="M71 460L41 0h429l-30 460L255 512z"/><path fill="#EF652A" d="M256 472l149-41 20-317H256z"/><path fill="#fff" d="M256 138v61h109l-10 115-99 28v63l153-43 20-224zM256 312v-60h-71l-4-52h75v-62h-138l14 173z"/></svg>'; }
+            currentLangName.textContent = name; currentLangIcon.innerHTML = icon;
+        }
+
+        function init() {
+            const savedFont = localStorage.getItem('zen_fontsize');
+            if(savedFont) {
+                currentAppFontSize = parseInt(savedFont);
+                document.getElementById('editor').style.setProperty('font-size', `${currentAppFontSize}px`, 'important');
+                document.getElementById('editor').style.setProperty('line-height', `${currentAppFontSize * 1.5}px`, 'important');
+                document.getElementById('lineNumbers').style.setProperty('font-size', `${currentAppFontSize}px`, 'important');
+                document.getElementById('lineNumbers').style.setProperty('line-height', `${currentAppFontSize * 1.5}px`, 'important');
+                document.getElementById('fontSizeDisplay').textContent = `${currentAppFontSize}px`;
+            }
+            const checkJar = setInterval(() => { if (window.jar) { clearInterval(checkJar); loadCode('js'); logToConsole("System Ready."); } }, 100);
+        }
+        init();
+
+        function loadCode(lang) {
+            currentAppLang = lang;
+            const saved = localStorage.getItem(`zen_v3_${lang}`);
+            window.jar.updateCode(saved !== null ? saved : DEFAULTS[lang]);
+            editorDiv.className = `language-${lang === 'js' ? 'javascript' : lang}`;
+            if(window.updateLines) window.updateLines();
+            if (lang === 'html') { tabPreview.classList.remove('hidden'); switchToTab('preview'); } 
+            else { tabPreview.classList.add('hidden'); switchToTab('console'); }
+        }
+
+        editorDiv.addEventListener('keyup', () => { if(window.jar) localStorage.setItem(`zen_v3_${currentAppLang}`, window.jar.toString()); });
+        window.insertSymbol = (char) => { editorDiv.focus(); document.execCommand('insertText', false, char); };
+        window.insertSnippet = (type) => {
+            editorDiv.focus(); let text = "";
+            if(type === 'log') text = currentAppLang === 'python' ? 'print()' : 'console.log()';
+            if(type === 'func') text = currentAppLang === 'python' ? 'def name():' : 'function name() {}';
+            if(type === 'if') text = currentAppLang === 'python' ? 'if condition:' : 'if (condition) {}';
+            document.execCommand('insertText', false, text);
+        };
+        const changeFontSize = (delta) => {
+            currentAppFontSize += delta; if(currentAppFontSize < 10) currentAppFontSize = 10; if(currentAppFontSize > 24) currentAppFontSize = 24;
+            const lineHeight = currentAppFontSize * 1.5;
+            document.getElementById('editor').style.setProperty('font-size', `${currentAppFontSize}px`, 'important');
+            document.getElementById('editor').style.setProperty('line-height', `${lineHeight}px`, 'important');
+            document.getElementById('lineNumbers').style.setProperty('font-size', `${currentAppFontSize}px`, 'important');
+            document.getElementById('lineNumbers').style.setProperty('line-height', `${lineHeight}px`, 'important');
+            document.getElementById('fontSizeDisplay').textContent = `${currentAppFontSize}px`;
+            localStorage.setItem('zen_fontsize', currentAppFontSize);
+        };
+        document.getElementById('fontInc').onclick = (e) => { e.stopPropagation(); changeFontSize(1); };
+        document.getElementById('fontDec').onclick = (e) => { e.stopPropagation(); changeFontSize(-1); };
+        const triggerClear = () => { if(confirm("Clear all code?")) { window.jar.updateCode(""); localStorage.setItem(`zen_v3_${currentAppLang}`, ""); if(window.updateLines) window.updateLines(); menuDropdown.classList.add('hidden'); } };
+        document.getElementById('mobileClearBtn').onclick = triggerClear; document.getElementById('clearCodeBtn').onclick = triggerClear;
+        const triggerFormat = () => {
+            const code = window.jar.toString();
+            try { let formatted = code; if (currentAppLang === 'js') formatted = prettier.format(code, { parser: "babel", plugins: prettierPlugins }); else if (currentAppLang === 'html') formatted = prettier.format(code, { parser: "html", plugins: prettierPlugins }); window.jar.updateCode(formatted); logToConsole(">> Code Beautified ✨", "warn"); menuDropdown.classList.add('hidden'); } catch (e) { logToConsole("Format Error: " + e.message, "error"); }
+        };
+        document.getElementById('mobileFormatBtn').onclick = triggerFormat; document.getElementById('formatBtn').onclick = triggerFormat;
+        document.getElementById('saveFileBtn').onclick = () => {
+            const code = window.jar.toString(); const blob = new Blob([code], { type: 'text/plain' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); let ext = currentAppLang === 'js' ? 'js' : currentAppLang === 'python' ? 'py' : 'html'; a.href = url; a.download = `gyroX_code.${ext}`; document.body.appendChild(a); a.click(); document.body.removeChild(a); menuDropdown.classList.add('hidden');
+        };
+        document.getElementById('colorPickerBtn').addEventListener('click', () => {
+            const colorInput = document.createElement('input');
+            colorInput.type = 'color';
+            colorInput.addEventListener('input', () => {
+                document.execCommand('insertText', false, colorInput.value);
+            });
+            colorInput.click();
+        });
+        function logToConsole(msg, type = 'log') {
+            const div = document.createElement('div'); div.textContent = typeof msg === 'object' ? JSON.stringify(msg, null, 2) : String(msg);
+            if (type === 'error') div.className = 'text-red-400 border-l-2 border-red-500 pl-2 my-1'; else if (type === 'warn') div.className = 'text-yellow-400 my-1'; else div.className = 'text-green-400 border-b border-[#222] py-1';
+            consoleContainer.appendChild(div); consoleContainer.scrollTop = consoleContainer.scrollHeight;
+        }
+        function setRunningState(running) {
+            isAppRunning = running;
+            if (running) { runBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" /></svg> STOP`; runBtn.className = "ml-2 bg-gradient-to-r from-red-600 to-orange-600 text-white px-3 py-1.5 rounded-full font-bold text-xs flex items-center gap-2 shadow-lg shadow-red-900/50 h-9"; statusDot.classList.replace('status-ready', 'status-busy'); } 
+            else { runBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg> RUN`; runBtn.className = "ml-1 bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-3 py-1.5 rounded-full font-bold text-xs flex items-center gap-2 shadow-lg shadow-cyan-900/50 h-9"; statusDot.classList.replace('status-busy', 'status-ready'); }
+        }
+        runBtn.addEventListener('click', async () => {
+            if (isAppRunning) { if (activeAppWorker) { activeAppWorker.terminate(); activeAppWorker = null; } setRunningState(false); logToConsole(">> Stopped.", "error"); return; }
+            if (!window.jar) return; const code = window.jar.toString(); consoleContainer.innerHTML = ''; setRunningState(true);
+            try {
+                if (currentAppLang === 'python') {
+                    switchToTab('console'); logToConsole(">> Running Python...", 'warn');
+                    Sk.configure({ output: (text) => { if(text !== "\n") logToConsole(text.replace(/\n$/, "")); }, read: (x) => { if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) throw "File not found: '" + x + "'"; return Sk.builtinFiles["files"][x]; }, execLimit: 4000 });
+                    try { await Sk.misceval.asyncToPromise(() => Sk.importMainWithBody("<stdin>", false, code, true)); logToConsole(">> Done", 'warn'); } catch (err) { logToConsole(err.toString(), 'error'); } finally { setRunningState(false); }
+                } else if (currentAppLang === 'js') {
+                    switchToTab('console'); logToConsole(">> Running JS...", 'warn');
+                    try {
+                        const workerCode = `self.onmessage=function(e){const console={log:(...args)=>self.postMessage({type:'log',data:args.join(' ')}),error:(...args)=>self.postMessage({type:'error',data:args.join(' ')}),warn:(...args)=>self.postMessage({type:'warn',data:args.join(' ')})};try{eval(e.data);self.postMessage({type:'done'});}catch(err){self.postMessage({type:'error',data:err.toString()});}};`;
+                        const blob = new Blob([workerCode], { type: 'application/javascript' }); activeAppWorker = new Worker(URL.createObjectURL(blob));
+                        const watchdog = setTimeout(() => { if (activeAppWorker) { activeAppWorker.terminate(); activeAppWorker = null; logToConsole(">> Timeout (4s).", "error"); setRunningState(false); } }, 4000);
+                        activeAppWorker.onmessage = (e) => { if (e.data.type === 'log') logToConsole(e.data.data); else if (e.data.type === 'error') { logToConsole(e.data.data, 'error'); clearTimeout(watchdog); setRunningState(false); } else if (e.data.type === 'warn') logToConsole(e.data.data, 'warn'); else if (e.data.type === 'done') { logToConsole(">> Done", 'warn'); clearTimeout(watchdog); setRunningState(false); } }; activeAppWorker.postMessage(code);
+                    } catch (e) { logToConsole(">> Worker failed, using fallback...", "warn"); try { const safeLog = console.log; console.log = (...args) => logToConsole(args.join(' ')); eval(code); console.log = safeLog; logToConsole(">> Done", 'warn'); } catch(err) { logToConsole(err.message, 'error'); } setRunningState(false); }
+                } else if (currentAppLang === 'html') { switchToTab('preview'); previewFrame.srcdoc = code; setRunningState(false); }
+            } catch (globalErr) { logToConsole("Global Error: " + globalErr.message, 'error'); setRunningState(false); }
+        });
+        function switchToTab(tab) {
+            if (tab === 'console') { consoleContainer.classList.remove('hidden'); previewFrame.classList.add('hidden'); tabConsole.classList.replace('border-transparent', 'border-cyan-500'); tabConsole.classList.replace('text-gray-500', 'text-gray-200'); tabPreview.classList.replace('border-cyan-500', 'border-transparent'); tabPreview.classList.replace('text-gray-200', 'text-gray-500'); } 
+            else { consoleContainer.classList.add('hidden'); previewFrame.classList.remove('hidden'); tabPreview.classList.replace('border-transparent', 'border-cyan-500'); tabPreview.classList.replace('text-gray-500', 'text-gray-200'); tabConsole.classList.replace('border-cyan-500', 'border-transparent'); tabConsole.classList.replace('text-gray-200', 'text-gray-500'); }
+        }
+        tabConsole.onclick = () => switchToTab('console'); tabPreview.onclick = () => switchToTab('preview'); document.getElementById('clearConsoleBtn').onclick = () => { consoleContainer.innerHTML = ''; if(currentAppLang==='html') previewFrame.srcdoc=''; };
+    </script>
+</body>
+</html>
