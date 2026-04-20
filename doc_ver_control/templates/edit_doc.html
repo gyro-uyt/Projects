@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
+                <h4 class="mb-0">Edit: {{ doc['title'] }}</h4>
+                <span class="badge bg-primary rounded-pill px-3 py-2">Updating v{{ rev['version_number'] }}</span>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="parent_id" value="{{ rev['id'] }}">
+                    <input type="hidden" name="version_number" value="{{ rev['version_number'] }}">
+                    
+                    <div class="mb-3">
+                        <label for="content" class="form-label fw-bold">Modified Content</label>
+                        <textarea class="form-control font-monospace" id="content" name="content" rows="15">{{ rev['content'] }}</textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="commit_message" class="form-label fw-bold text-muted">What did you change?</label>
+                        <input type="text" class="form-control border-primary" id="commit_message" name="commit_message" required placeholder="e.g., Fixed typos in the introduction block">
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('view_doc', id=doc['id']) }}" class="btn btn-outline-secondary">Discard Changes</a>
+                        <button type="submit" class="btn btn-primary px-4">Commit Revision</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

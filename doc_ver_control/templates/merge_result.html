@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        <h2 class="mb-4">Merge Result</h2>
+        
+        {% if has_conflict %}
+            <div class="alert alert-danger shadow-sm border-0">
+                <h5 class="alert-heading">Merge Conflict!</h5>
+                <p>There are conflicting changes that could not be automatically resolved. Please fix them below and save as a new revision.</p>
+            </div>
+        {% else %}
+            <div class="alert alert-success shadow-sm border-0">
+                <h5 class="alert-heading">Clean Merge</h5>
+                <p>The differences were successfully merged without conflicts.</p>
+            </div>
+        {% endif %}
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h5 class="mb-3 text-secondary">Visual Conflict Guide</h5>
+                <div id="conflict-viewer" class="p-3 border rounded shadow-sm bg-white mb-4" style="font-family: Consolas, monospace; white-space: pre-wrap; font-size: 0.9rem; max-height: 400px; overflow-y: auto;">{{ content }}</div>
+                
+                <hr>
+                <h5 class="mb-3 mt-4 text-secondary">Manual Resolution Editor</h5>
+                <form action="{{ url_for('edit_doc', id=doc['id']) }}" method="POST">
+                    <input type="hidden" name="parent_id" value="{{ base_id }}">
+                    <div class="mb-3">
+                        <textarea class="form-control font-monospace" name="content" rows="15" style="white-space: pre-wrap;">{{ content }}</textarea>
+                    </div>
+                </form>
+                
+                <p class="text-muted"><small>Note: To complete the merge, please manually copy the content above, resolve any markers, and create a new revision.</small></p>
+                <div class="d-flex justify-content-between mt-3">
+                    <a href="{{ url_for('merge_view', id=doc['id']) }}" class="btn btn-outline-secondary">Go Back</a>
+                    <a href="{{ url_for('edit_doc', id=doc['id']) }}" class="btn btn-primary">Go to Edit Page</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const viewer = document.getElementById("conflict-viewer");
+        if (viewer) {
+            let html = viewer.innerHTML;
+            
+            // Regex match the markers and wrap them in Bootstrap color utilities
+            html = html.replace(/&lt;&lt;&lt;&lt;&lt;&lt;&lt; CURRENT VERSION/g, '<span class="bg-danger text-white px-2 py-1 fw-bold d-block">&lt;&lt;&lt;&lt;&lt;&lt;&lt; CURRENT VERSION</span><div class="p-2 border-start border-danger border-4 bg-light text-danger">');
+            
+            html = html.replace(/=======/g, '</div><span class="bg-warning text-dark px-2 py-1 fw-bold d-block">=======</span><div class="p-2 border-start border-success border-4 bg-light text-success">');
+            
+            html = html.replace(/&gt;&gt;&gt;&gt;&gt;&gt;&gt; INCOMING VERSION/g, '</div><span class="bg-success text-white px-2 py-1 fw-bold d-block">&gt;&gt;&gt;&gt;&gt;&gt;&gt; INCOMING VERSION</span>');
+            
+            viewer.innerHTML = html;
+        }
+    });
+</script>
+{% endblock %}

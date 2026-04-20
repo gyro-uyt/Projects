@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+    .diff-table { border-collapse: collapse; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem; table-layout: fixed; width: 100%; }
+    .diff-table td { padding: 4px 8px; vertical-align: top; word-wrap: break-word; }
+    .diff-num { width: 40px; color: #6c757d; background: #f8f9fa; border-right: 1px solid #dee2e6; text-align: right; user-select: none; }
+    .diff-content { width: calc(50% - 40px); white-space: pre-wrap; }
+    
+    .diff-type-insert .right-content { background-color: #e6ffed; }
+    .diff-type-insert .right-num { background-color: #cdffd8; }
+    .diff-type-insert .left-content { background-color: #f6f8fa; }
+    
+    .diff-type-delete .left-content { background-color: #ffeef0; }
+    .diff-type-delete .left-num { background-color: #ffdce0; }
+    .diff-type-delete .right-content { background-color: #f6f8fa; }
+    
+    .diff-type-replace .left-content { background-color: #ffeef0; }
+    .diff-type-replace .left-num { background-color: #ffdce0; }
+    .diff-type-replace .right-content { background-color: #e6ffed; }
+    .diff-type-replace .right-num { background-color: #cdffd8; }
+    
+    .diff-type-equal .left-content, .diff-type-equal .right-content { background-color: #ffffff; color: #57606a; }
+</style>
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Diff Analysis</h2>
+            <a href="{{ url_for('history', id=doc_id, target=r2_id, compare_to=r1_id) }}" class="btn btn-outline-secondary">Back to Timeline</a>
+        </div>
+        
+        <div class="card shadow-sm border-0 mb-5">
+            <div class="card-header bg-white border-bottom d-flex justify-content-center py-3">
+                <div class="row w-100 text-center">
+                    <div class="col-6 fw-bold text-danger border-end">Older (v{{ r1['version_number'] }})</div>
+                    <div class="col-6 fw-bold text-success">Newer (v{{ r2['version_number'] }})</div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <table class="diff-table">
+                    <tbody>
+                        {% if not diff_data %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">No changes detected between these versions.</td>
+                        </tr>
+                        {% endif %}
+                        
+                        {% for row in diff_data %}
+                        <tr class="diff-type-{{ row.type }}">
+                            <td class="diff-num left-num border-end-0">{{ row.left_num }}</td>
+                            <td class="diff-content left-content border-end">{{ row.left }}</td>
+                            <td class="diff-num right-num border-end-0">{{ row.right_num }}</td>
+                            <td class="diff-content right-content">{{ row.right }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

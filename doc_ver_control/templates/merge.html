@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Merge Tool: {{ doc['title'] }}</h2>
+            <a href="{{ url_for('view_doc', id=doc['id']) }}" class="btn btn-outline-secondary">Back to Document</a>
+        </div>
+        
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <p>Select the three versions for a 3-way merge.</p>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="base_id" class="form-label">Base Version (Common Ancestor)</label>
+                        <select class="form-select" id="base_id" name="base_id" required>
+                            {% for r in revisions %}
+                                <option value="{{ r['id'] }}">v{{ r['version_number'] }} ({{ r['timestamp'] }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="mine_id" class="form-label">Mine Version (Current)</label>
+                        <select class="form-select" id="mine_id" name="mine_id" required>
+                            {% for r in revisions %}
+                                <option value="{{ r['id'] }}">v{{ r['version_number'] }} ({{ r['timestamp'] }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="theirs_id" class="form-label">Theirs Version (Incoming)</label>
+                        <select class="form-select" id="theirs_id" name="theirs_id" required>
+                            {% for r in revisions %}
+                                <option value="{{ r['id'] }}">v{{ r['version_number'] }} ({{ r['timestamp'] }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-info text-white fw-bold">Run Merge</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

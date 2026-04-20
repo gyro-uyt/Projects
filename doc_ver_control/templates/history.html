@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+    .timeline { position: relative; padding-left: 2rem; }
+    .timeline::before {
+        content: ''; position: absolute; left: 0.5rem; top: 0; bottom: 0; 
+        width: 2px; background: #dee2e6;
+    }
+    .timeline-item { position: relative; margin-bottom: 2rem; }
+    .timeline-item::before {
+        content: ''; position: absolute; left: -2rem; top: 0.3rem; 
+        width: 1rem; height: 1rem; border-radius: 50%;
+        background: #0d6efd; border: 3px solid #fff; box-shadow: 0 0 0 1px #0d6efd;
+    }
+</style>
+
+<div class="row">
+    <div class="col-12 mb-4 d-flex justify-content-between align-items-center">
+        <h2>Version History: <span class="text-primary">{{ doc['title'] }}</span></h2>
+        <a href="{{ url_for('view_doc', id=doc['id']) }}" class="btn btn-outline-secondary px-4">Back to Document</a>
+    </div>
+
+    <!-- Timeline View -->
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 pt-4 px-4 pb-1 mb-4">
+            <div class="timeline">
+                {% for r in revisions %}
+                <div class="timeline-item">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="mb-0 fw-bold">v{{ r['version_number'] }} <span class="text-muted fw-normal fs-6 ms-2">{{ r['commit_message'] }}</span></h5>
+                        <span class="badge bg-light text-dark border">{{ r['timestamp'] }}</span>
+                    </div>
+                    
+                    <div class="mt-2">
+                        {% if r['parent_id'] %}
+                            <a href="{{ url_for('diff_view', id=doc['id'], target=r['id']) }}" class="btn btn-sm btn-outline-primary">View Diff with Parent</a>
+                        {% else %}
+                            <a href="{{ url_for('diff_view', id=doc['id'], target=r['id']) }}" class="btn btn-sm btn-outline-success">View Initial Commit</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Custom Compare -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 bg-light">
+            <div class="card-body">
+                <h5 class="card-title fw-bold">Custom Compare</h5>
+                <p class="text-muted small mb-3">Want to compare two non-consecutive versions?</p>
+                <form action="{{ url_for('diff_view', id=doc['id']) }}" method="GET">
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">Older Version</label>
+                        <select class="form-select" name="compare_to">
+                            {% for r in revisions %}
+                                <option value="{{ r['id'] }}" {% if current_compare_to|string == r['id']|string %}selected{% endif %}>v{{ r['version_number'] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Newer Version</label>
+                        <select class="form-select" name="target">
+                            {% for r in revisions %}
+                                <option value="{{ r['id'] }}" {% if current_target|string == r['id']|string %}selected{% endif %}>v{{ r['version_number'] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button class="btn btn-secondary w-100 btn-sm">Compare Versions</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
