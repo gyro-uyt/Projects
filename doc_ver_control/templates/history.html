@@ -32,12 +32,13 @@
                         <span class="badge bg-light text-dark border">{{ r['timestamp'] }}</span>
                     </div>
                     
-                    <div class="mt-2">
+                    <div class="mt-2 d-flex gap-2">
                         {% if r['parent_id'] %}
                             <a href="{{ url_for('diff_view', id=doc['id'], target=r['id']) }}" class="btn btn-sm btn-outline-primary">View Diff with Parent</a>
                         {% else %}
                             <a href="{{ url_for('diff_view', id=doc['id'], target=r['id']) }}" class="btn btn-sm btn-outline-success">View Initial Commit</a>
                         {% endif %}
+                        <a href="{{ url_for('download_doc', id=doc['id'], rev_id=r['id']) }}" class="btn btn-sm btn-outline-secondary" title="Download this exact version">↓ Download v{{ r['version_number'] }}</a>
                     </div>
                 </div>
                 {% endfor %}
@@ -47,8 +48,8 @@
 
     <!-- Advanced Custom Compare -->
     <div class="col-md-4">
-        <div class="card shadow-sm border-0 bg-light">
-            <div class="card-body">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body position-relative">
                 <h5 class="card-title fw-bold">Custom Compare</h5>
                 <p class="text-muted small mb-3">Want to compare two non-consecutive versions?</p>
                 <form action="{{ url_for('diff_view', id=doc['id']) }}" method="GET">

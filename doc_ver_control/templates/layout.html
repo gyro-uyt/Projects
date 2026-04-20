@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document VCS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .diff-delete { background-color: #f8d7da; color: #842029; }
         .diff-insert { background-color: #d1e7dd; color: #0f5132; }
+        [data-bs-theme="dark"] .diff-delete { background-color: rgba(220, 53, 69, 0.2); color: #ea868f; }
+        [data-bs-theme="dark"] .diff-insert { background-color: rgba(25, 135, 84, 0.2); color: #75b798; }
+        
         
         .timer-svg {
             position: absolute; top: 15px; right: 14px;
@@ -25,22 +29,88 @@
             from { stroke-dashoffset: 0; }
             to { stroke-dashoffset: 100; }
         }
+        
+        /* Bootstrap Navbar Styling */
+        .bs-navbar { background-color: #2a928c; }
+        .bs-search-input {
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #fff !important;
+            border-radius: 6px;
+        }
+        .bs-search-input:focus {
+            background-color: rgba(255, 255, 255, 0.25) !important;
+            border-color: rgba(255, 255, 255, 0.5) !important;
+            box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1) !important;
+        }
+        .bs-search-input::placeholder { color: rgba(255, 255, 255, 0.65) !important; }
+        .bs-nav-link { color: rgba(255, 255, 255, 0.85) !important; font-weight: 500; }
+        .bs-nav-link:hover { color: #fff !important; }
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom mb-4">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="/">DocVCS</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/doc/new">New Document</a>
-                </li>
-            </ul>
+<nav class="navbar navbar-expand-lg bs-navbar py-2 shadow-sm mb-4">
+    <div class="container position-relative">
+        <!-- Logo -->
+        <div class="d-flex align-items-center me-4">
+            <a class="navbar-brand fw-bold text-white d-flex align-items-center me-0 fs-4" href="/">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" class="me-2 text-white"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8" stroke="white" stroke-width="2"></polyline></svg>
+                DocVCS
+            </a>
         </div>
+
+        <!-- Center Search Bar -->
+        <div class="position-absolute start-50 translate-middle-x d-none d-lg-block">
+            <div class="position-relative" style="width: 320px;">
+                <i class="bi bi-search position-absolute text-white" style="left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.7;"></i>
+                <input class="form-control form-control-sm bs-search-input ps-5 pe-5 py-2 shadow-none" type="search" placeholder="Search" aria-label="Search" id="globalSearchInput" autocomplete="off">
+                <div class="position-absolute" style="right: 6px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                    <span class="badge border border-white border-opacity-25" style="background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); font-size: 0.7rem; padding: 0.35rem 0.4rem;">Ctrl K</span>
+                </div>
+                
+                <ul class="dropdown-menu shadow w-100" id="searchResultsMenu" style="position: absolute; top: calc(100% + 5px); left: 0; z-index: 1050; max-height: 50vh; overflow-y: auto; overflow-x: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                    <!-- Javascript will inject results here -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right Icons -->
+        <ul class="navbar-nav ms-auto flex-row align-items-center">
+            <li class="nav-item d-none d-md-block"><a class="nav-link bs-nav-link px-2 d-flex align-items-center" href="https://github.com/gyro-uyt/Projects/tree/main/doc_ver_control" target="_blank" rel="noopener noreferrer" title="View Source on GitHub"><i class="bi bi-github fs-5"></i></a></li>
+            
+            <!-- Divider -->
+            <div class="vr mx-2 bg-white d-none d-md-block my-auto" style="opacity: 0.3; height: 18px; width: 1px;"></div>
+            
+            <!-- Version Badge -->
+            <li class="nav-item">
+                <a class="nav-link text-white px-2 d-flex align-items-center" href="#" style="opacity: 0.85;">
+                    <span class="font-monospace me-1" style="font-size: 0.95rem;">v1.0</span>
+                </a>
+            </li>
+            
+            <!-- Divider -->
+            <div class="vr mx-2 bg-white my-auto" style="opacity: 0.3; height: 18px; width: 1px;"></div>
+            
+            <!-- Theme Toggle -->
+            <li class="nav-item dropdown">
+                <a class="nav-link text-white px-2 d-flex align-items-center" href="#" id="themeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="opacity: 0.85;">
+                    <i id="theme-icon-active" class="bi bi-sun-fill fs-5"></i>
+                    <i class="bi bi-caret-down-fill ms-1" style="font-size: 0.6rem;"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="themeDropdown" style="min-width: 140px; margin-top: 8px;">
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center theme-btn active" data-theme-val="light">
+                            <i class="bi bi-sun-fill me-3 opacity-50"></i> Light
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center theme-btn" data-theme-val="dark">
+                            <i class="bi bi-moon-stars-fill me-3 opacity-50"></i> Dark
+                        </button>
+                    </li>
+                </ul>
+            </li>
+        </ul>
     </div>
 </nav>
 
@@ -67,6 +137,40 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // Theme Toggle Logic
+    const themeButtons = document.querySelectorAll('.theme-btn');
+    const activeThemeIcon = document.getElementById('theme-icon-active');
+
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-bs-theme', theme);
+        localStorage.setItem('theme', theme);
+        
+        themeButtons.forEach(b => {
+             b.classList.remove('active');
+             b.querySelector('i').classList.replace('opacity-100', 'opacity-50');
+             if(b.getAttribute('data-theme-val') === theme) {
+                 b.classList.add('active');
+                 b.querySelector('i').classList.replace('opacity-50', 'opacity-100');
+             }
+        });
+        
+        if (theme === 'dark') {
+            activeThemeIcon.className = 'bi bi-moon-stars-fill fs-5';
+        } else {
+            activeThemeIcon.className = 'bi bi-sun-fill fs-5';
+        }
+    }
+
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+
+    themeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const theme = btn.getAttribute('data-theme-val');
+            setTheme(theme);
+        });
+    });
+
     // Auto-dismiss logic for the toast alerts matching the 5s CSS animation
     document.addEventListener("DOMContentLoaded", function() {
         const alerts = document.querySelectorAll('.toast-alert');
@@ -76,6 +180,75 @@
                 bsAlert.close();
             }, 5000); 
         });
+        
+        // Contextual Search Bar Logic
+        const searchInput = document.getElementById('globalSearchInput');
+        const searchResultsMenu = document.getElementById('searchResultsMenu');
+        
+        if (searchInput) {
+            // Dismiss manually if clicking outside
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !searchResultsMenu.contains(e.target)) {
+                    searchResultsMenu.classList.remove('show');
+                }
+            });
+            
+            // Focus on Ctrl+K
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    searchInput.focus();
+                }
+            });
+
+            let searchTimeout;
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                clearTimeout(searchTimeout);
+                
+                if (query.length === 0) {
+                    searchResultsMenu.classList.remove('show');
+                    return;
+                }
+
+                searchTimeout = setTimeout(async () => {
+                    // Extract doc id from current URL if we are inside a specific document context
+                    const urlMatch = window.location.pathname.match(/\/(doc|edit|history|diff|merge)\/(\d+)/);
+                    const docId = urlMatch ? urlMatch[2] : '';
+                    
+                    try {
+                        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&doc_id=${docId}`);
+                        const data = await res.json();
+                        
+                        searchResultsMenu.innerHTML = '';
+                        
+                        if (data.length === 0) {
+                            searchResultsMenu.innerHTML = '<li><span class="dropdown-item text-muted">No results found</span></li>';
+                        } else {
+                            data.forEach(item => {
+                                const li = document.createElement('li');
+                                let href = '';
+                                let innerHTML = '';
+                                
+                                if (item.type === 'doc') {
+                                    href = `/doc/${item.id}`;
+                                    innerHTML = `<i class="bi bi-file-earmark-text me-2"></i><strong>${item.text}</strong>`;
+                                } else if (item.type === 'rev') {
+                                    href = `/doc/${item.doc_id}/history?target=${item.id}`;
+                                    innerHTML = `<i class="bi bi-clock-history me-2"></i><span class="badge bg-secondary me-2">v${item.version}</span><span>${item.text}</span>`;
+                                }
+                                
+                                li.innerHTML = `<a class="dropdown-item text-wrap py-2" href="${href}" style="cursor: pointer;">${innerHTML}</a>`;
+                                searchResultsMenu.appendChild(li);
+                            });
+                        }
+                        searchResultsMenu.classList.add('show');
+                    } catch (err) {
+                        console.error('Search query failed:', err);
+                    }
+                }, 250);
+            });
+        }
     });
 </script>
 </body>

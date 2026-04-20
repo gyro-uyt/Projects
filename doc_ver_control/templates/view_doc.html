@@ -9,15 +9,16 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>{{ doc['title'] }}</h2>
             <div>
-                <a href="{{ url_for('edit_doc', id=doc['id']) }}" class="btn btn-outline-primary">Edit Latest</a>
+                <a href="{{ url_for('edit_doc', id=doc['id']) }}" class="btn btn-primary shadow-sm px-4">Edit Latest</a>
                 <a href="{{ url_for('history', id=doc['id']) }}" class="btn btn-outline-secondary">History</a>
                 <a href="{{ url_for('merge_view', id=doc['id']) }}" class="btn btn-outline-info">Merge Tools</a>
+                <a href="{{ url_for('download_doc', id=doc['id']) }}" class="btn btn-outline-success">Download</a>
             </div>
         </div>
 
         {% if rev %}
             <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white border-bottom d-flex justify-content-between">
+                <div class="card-header bg-transparent border-bottom d-flex justify-content-between">
                     <span>Version: <strong>{{ rev['version_number'] }}</strong></span>
                     <span class="text-muted">{{ rev['timestamp'] }}</span>
                 </div>

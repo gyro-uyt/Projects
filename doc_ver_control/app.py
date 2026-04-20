@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, Response, jsonify
 from database import get_db, init_db
 from algo import get_side_by_side_diff, basic_merge
 
@@ -48,6 +48,36 @@ def new_doc():
         return redirect(url_for('view_doc', id=doc_id))
     
     return render_template('new_doc.html')
+
+@app.route('/upload', methods=['POST'])
+def upload_doc():
+    file = request.files.get('file')
+    if not file or file.filename == '':
+        flash('No file selected', 'warning')
+        return redirect(url_for('index'))
+        
+    custom_title = request.form.get('title', '').strip()
+    title = custom_title if custom_title else file.filename
+    
+    try:
+        content = file.read().decode('utf-8')
+    except UnicodeDecodeError:
+        flash('Could not read file. Only plain-text files are supported.', 'danger')
+        return redirect(url_for('index'))
+        
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute('INSERT INTO documents (title) VALUES (?)', (title,))
+    doc_id = cursor.lastrowid
+    
+    cursor.execute('''
+        INSERT INTO revisions (document_id, version_number, content, commit_message) 
+        VALUES (?, ?, ?, ?)
+    ''', (doc_id, 1, content, 'Initial file upload'))
+    db.commit()
+    
+    flash('Document uploaded successfully!', 'success')
+    return redirect(url_for('view_doc', id=doc_id))
 
 @app.route('/doc/<int:id>', methods=['GET'])
 def view_doc(id):
@@ -231,6 +261,61 @@ def merge_view(id):
     ''', (id,))
     revisions = cursor.fetchall()
     return render_template('merge.html', doc=doc, revisions=revisions)
+
+@app.route('/doc/<int:id>/download')
+def download_doc(id):
+    rev_id = request.args.get('rev_id')
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute('SELECT title FROM documents WHERE id = ?', (id,))
+    doc = cursor.fetchone()
+    
+    if rev_id:
+        cursor.execute('SELECT version_number, content FROM revisions WHERE id = ?', (rev_id,))
+    else:
+        cursor.execute('SELECT version_number, content FROM revisions WHERE document_id = ? ORDER BY version_number DESC LIMIT 1', (id,))
+        
+    rev = cursor.fetchone()
+    
+    safe_title = "".join([c for c in doc['title'] if c.isalpha() or c.isdigit() or c==' ']).rstrip().replace(" ", "_")
+    if not safe_title:
+        safe_title = "document"
+    filename = f"{safe_title}_v{rev['version_number']}.txt"
+    
+    return Response(
+        rev['content'],
+        mimetype="text/plain",
+        headers={"Content-disposition": f"attachment; filename={filename}"}
+    )
+
+@app.route('/api/search')
+def api_search():
+    query = request.args.get('q', '').strip()
+    doc_id = request.args.get('doc_id')
+    
+    if not query:
+        return jsonify([])
+        
+    db = get_db()
+    cursor = db.cursor()
+    
+    if not doc_id:
+        cursor.execute("SELECT id, title FROM documents WHERE title LIKE ? LIMIT 10", ('%' + query + '%',))
+        docs = cursor.fetchall()
+        return jsonify([{'type': 'doc', 'id': d['id'], 'text': d['title']} for d in docs])
+    else:
+        import re
+        version_num = re.sub(r'^[vV]\s*', '', query)
+        
+        cursor.execute("""
+            SELECT id, version_number, commit_message 
+            FROM revisions 
+            WHERE document_id = ? AND (commit_message LIKE ? OR CAST(version_number AS TEXT) LIKE ?)
+            ORDER BY version_number DESC
+            LIMIT 15
+        """, (doc_id, '%' + query + '%', '%' + version_num + '%'))
+        revs = cursor.fetchall()
+        return jsonify([{'type': 'rev', 'id': r['id'], 'doc_id': doc_id, 'version': r['version_number'], 'text': r['commit_message']} for r in revs])
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
