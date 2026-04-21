@@ -203,3 +203,51 @@ def basic_merge(base_content, mine_content, theirs_content):
         last_base_idx += 1
         
     return '\n'.join(merged_lines), False
+
+def summarize_text(text, num_sentences=4):
+    import re
+    from collections import defaultdict
+
+    if not text.strip():
+        return ""
+
+    sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+    sentences = [s.strip() for s in sentences if len(s.strip()) > 5]
+    if len(sentences) <= num_sentences:
+        return " ".join(sentences)
+
+    stop_words = set([
+        "the", "is", "in", "and", "to", "of", "a", "it", "that", "this", "on", "for",
+        "with", "as", "by", "an", "be", "at", "are", "was", "were", "but", "not", "or",
+        "what", "when", "where", "how", "who", "which", "will", "would", "can", "could"
+    ])
+
+    word_frequencies = defaultdict(int)
+
+    for sentence in sentences:
+        words = re.findall(r'\b[A-Za-z]{2,}\b', sentence.lower())
+        for word in words:
+            if word not in stop_words:
+                word_frequencies[word] += 1
+
+    if not word_frequencies:
+        return text
+
+    max_frequency = max(word_frequencies.values())
+    for word in word_frequencies.keys():
+        word_frequencies[word] = word_frequencies[word] / max_frequency
+
+    sentence_scores = defaultdict(float)
+
+    for i, sentence in enumerate(sentences):
+        words = re.findall(r'\b[A-Za-z]{2,}\b', sentence.lower())
+        for word in words:
+            if word in word_frequencies:
+                # Add a tiny boost for earlier sentences
+                sentence_scores[i] += word_frequencies[word] + (0.1 / (i + 1))
+
+    sorted_sentences = sorted(sentence_scores.items(), key=lambda x: x[1], reverse=True)
+    top_sentences_indices = sorted([idx for idx, _ in sorted_sentences[:num_sentences]])
+
+    summarized_text = " ".join([sentences[idx] for idx in top_sentences_indices])
+    return summarized_text

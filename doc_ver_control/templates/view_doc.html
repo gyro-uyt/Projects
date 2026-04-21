@@ -9,6 +9,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>{{ doc['title'] }}</h2>
             <div>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#summaryModal"><i class="bi bi-stars"></i> Summarize</button>
                 <a href="{{ url_for('edit_doc', id=doc['id']) }}" class="btn btn-primary shadow-sm px-4">Edit Latest</a>
                 <a href="{{ url_for('history', id=doc['id']) }}" class="btn btn-outline-secondary">History</a>
                 <a href="{{ url_for('merge_view', id=doc['id']) }}" class="btn btn-outline-info">Merge Tools</a>
@@ -31,4 +32,45 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Summary Modal -->
+<div class="modal fade" id="summaryModal" tabindex="-1" aria-labelledby="summaryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold" id="summaryModalLabel"><i class="bi bi-robot me-2 text-primary"></i>Document Summary</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center p-4" id="summaryBody">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2 text-muted">Reading and extracting key points...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const summaryModal = document.getElementById('summaryModal');
+    if(summaryModal) {
+        summaryModal.addEventListener('show.bs.modal', function () {
+            const summaryBody = document.getElementById('summaryBody');
+            summaryBody.innerHTML = '<div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted">Reading and extracting key points...</p>';
+            
+            fetch('{{ url_for("api_summarize_doc", id=doc["id"]) }}')
+                .then(response => response.json())
+                .then(data => {
+                    if(data.summary) {
+                        summaryBody.innerHTML = '<div class="text-start p-3" style="font-size: 1.15rem; line-height: 1.7; background: var(--bs-tertiary-bg); border-radius: 8px; border-left: 4px solid var(--bs-primary);">' + data.summary + '</div>';
+                    } else {
+                        summaryBody.innerHTML = '<div class="alert alert-warning border-0">Could not generate summary. Document is empty.</div>';
+                    }
+                })
+                .catch(err => {
+                    summaryBody.innerHTML = '<div class="alert alert-danger border-0">Error fetching summary.</div>';
+                });
+        });
+    }
+});
+</script>
 {% endblock %}

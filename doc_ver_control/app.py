@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, Response, jsonify
 from database import get_db, init_db
-from algo import get_side_by_side_diff, basic_merge
+from algo import get_side_by_side_diff, basic_merge, summarize_text
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -396,6 +396,23 @@ def api_search():
         """, (doc_id, '%' + query + '%', '%' + version_num + '%'))
         revs = cursor.fetchall()
         return jsonify([{'type': 'rev', 'id': r['id'], 'doc_id': doc_id, 'version': r['version_number'], 'text': r['commit_message']} for r in revs])
+
+@app.route('/api/doc/<int:id>/summarize')
+@login_required
+def api_summarize_doc(id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute('''
+        SELECT content FROM revisions 
+        WHERE document_id = ? 
+        ORDER BY version_number DESC LIMIT 1
+    ''', (id,))
+    rev = cursor.fetchone()
+    if not rev:
+        return jsonify({'summary': ''})
+    
+    summary = summarize_text(rev['content'])
+    return jsonify({'summary': summary})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=5000)
