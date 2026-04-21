@@ -1,14 +1,85 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, Response, jsonify
 from database import get_db, init_db
 from algo import get_side_by_side_diff, basic_merge
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'super_secret_key'
 
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+
+class User(UserMixin):
+    def __init__(self, id, username):
+        self.id = id
+        self.username = username
+
+@login_manager.user_loader
+def load_user(user_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute('SELECT id, username FROM users WHERE id = ?', (user_id,))
+    user = cursor.fetchone()
+    if user:
+        return User(id=user['id'], username=user['username'])
+    return None
+
 with app.app_context():
     init_db()
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
+        if cursor.fetchone():
+            flash('Username already exists.', 'danger')
+            return redirect(url_for('register'))
+            
+        password_hash = generate_password_hash(password)
+        cursor.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)', (username, password_hash))
+        db.commit()
+        
+        flash('Registration successful! Please login.', 'success')
+        return redirect(url_for('login'))
+        
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute('SELECT id, username, password_hash FROM users WHERE username = ?', (username,))
+        user_row = cursor.fetchone()
+        
+        if user_row and check_password_hash(user_row['password_hash'], password):
+            user = User(id=user_row['id'], username=user_row['username'])
+            login_user(user)
+            flash('Logged in successfully!', 'success')
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid username or password.', 'danger')
+            
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('login'))
+
 @app.route('/')
+@login_required
 def index():
     db = get_db()
     cursor = db.cursor()
@@ -23,6 +94,7 @@ def index():
     return render_template('index.html', documents=documents)
 
 @app.route('/doc/new', methods=['GET', 'POST'])
+@login_required
 def new_doc():
     if request.method == 'POST':
         title = request.form['title']
@@ -50,6 +122,7 @@ def new_doc():
     return render_template('new_doc.html')
 
 @app.route('/upload', methods=['POST'])
+@login_required
 def upload_doc():
     file = request.files.get('file')
     if not file or file.filename == '':
@@ -80,6 +153,7 @@ def upload_doc():
     return redirect(url_for('view_doc', id=doc_id))
 
 @app.route('/doc/<int:id>', methods=['GET'])
+@login_required
 def view_doc(id):
     db = get_db()
     cursor = db.cursor()
@@ -98,6 +172,7 @@ def view_doc(id):
     return render_template('view_doc.html', doc=doc, rev=latest_rev)
 
 @app.route('/doc/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
 def edit_doc(id):
     db = get_db()
     cursor = db.cursor()
@@ -156,6 +231,7 @@ def edit_doc(id):
     return render_template('edit_doc.html', doc=doc, rev=rev)
 
 @app.route('/doc/<int:id>/history')
+@login_required
 def history(id):
     db = get_db()
     cursor = db.cursor()
@@ -175,6 +251,7 @@ def history(id):
     return render_template('history.html', doc=doc, revisions=revisions, current_target=current_target, current_compare_to=current_compare_to)
 
 @app.route('/doc/<int:id>/diff')
+@login_required
 def diff_view(id):
     target_rev_id = request.args.get('target')
     compare_to_id = request.args.get('compare_to')
@@ -232,6 +309,7 @@ def diff_view(id):
     return render_template('diff.html', diff_data=sbs_diff, r1=r1, r2=r2, doc_id=id, r1_id=r1_id, r2_id=r2_id)
 
 @app.route('/doc/<int:id>/merge', methods=['GET', 'POST'])
+@login_required
 def merge_view(id):
     db = get_db()
     cursor = db.cursor()
@@ -263,6 +341,7 @@ def merge_view(id):
     return render_template('merge.html', doc=doc, revisions=revisions)
 
 @app.route('/doc/<int:id>/download')
+@login_required
 def download_doc(id):
     rev_id = request.args.get('rev_id')
     db = get_db()
@@ -289,6 +368,7 @@ def download_doc(id):
     )
 
 @app.route('/api/search')
+@login_required
 def api_search():
     query = request.args.get('q', '').strip()
     doc_id = request.args.get('doc_id')
@@ -318,4 +398,4 @@ def api_search():
         return jsonify([{'type': 'rev', 'id': r['id'], 'doc_id': doc_id, 'version': r['version_number'], 'text': r['commit_message']} for r in revs])
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', debug=True, port=5000)

@@ -81,6 +81,28 @@
             <!-- Divider -->
             <div class="vr mx-2 bg-white d-none d-md-block my-auto" style="opacity: 0.3; height: 18px; width: 1px;"></div>
             
+            <!-- Auth Links -->
+            {% if current_user.is_authenticated %}
+                <li class="nav-item">
+                    <span class="nav-link text-white px-2 d-flex align-items-center" style="opacity: 0.85;">
+                        <i class="bi bi-person-circle me-1"></i> {{ current_user.username }}
+                    </span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white px-2" href="{{ url_for('logout') }}" style="opacity: 0.85;">Logout</a>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-link text-white px-2" href="{{ url_for('login') }}" style="opacity: 0.85;">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white px-2" href="{{ url_for('register') }}" style="opacity: 0.85;">Register</a>
+                </li>
+            {% endif %}
+            
+            <!-- Divider -->
+            <div class="vr mx-2 bg-white my-auto d-none d-md-block" style="opacity: 0.3; height: 18px; width: 1px;"></div>
+            
             <!-- Version Badge -->
             <li class="nav-item">
                 <a class="nav-link text-white px-2 d-flex align-items-center" href="#" style="opacity: 0.85;">

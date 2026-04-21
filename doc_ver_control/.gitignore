@@ -1,0 +1,12 @@
+# Python & Virtual Environments
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Local Database (Don't share your private accounts/documents!)
+vcs.db
+
+# OS generated files
+.DS_Store
+Thumbs.db

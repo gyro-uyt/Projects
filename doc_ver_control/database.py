@@ -27,4 +27,11 @@ def init_db():
             FOREIGN KEY(document_id) REFERENCES documents(id)
         )
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL
+        )
+    ''')
     db.commit()
