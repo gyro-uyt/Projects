@@ -3,7 +3,7 @@ from database import get_db, init_db
 from algo import get_side_by_side_diff, basic_merge, summarize_text
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-
+ 
 app = Flask(__name__)
 app.secret_key = 'super_secret_key'
 

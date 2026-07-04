@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocVCS — Project Report</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            --c-bg: #ffffff;
+            --c-text: #1a1a2e;
+            --c-text-muted: #64748b;
+            --c-primary: #2a928c;
+            --c-primary-light: #e6f5f4;
+            --c-border: #e2e8f0;
+            --c-code-bg: #f8fafc;
+            --c-heading: #0f172a;
+            --c-accent: #3b82f6;
+            --c-red: #ef4444;
+            --c-green: #22c55e;
+            --c-yellow: #eab308;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--c-text);
+            background: var(--c-bg);
+            line-height: 1.75;
+            font-size: 14px;
+        }
+
+        .page {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 40px 50px;
+        }
+
+        /* ── Cover Header ── */
+        .cover {
+            text-align: center;
+            padding: 50px 0 30px;
+            border-bottom: 3px solid var(--c-primary);
+            margin-bottom: 35px;
+        }
+        .cover h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--c-primary);
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+        .cover .subtitle {
+            font-size: 1.1rem;
+            color: var(--c-text-muted);
+            font-weight: 400;
+        }
+        .cover .meta {
+            margin-top: 18px;
+            font-size: 0.85rem;
+            color: var(--c-text-muted);
+        }
+
+        /* ── Sections ── */
+        h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--c-heading);
+            margin-top: 38px;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--c-primary);
+        }
+        h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--c-heading);
+            margin-top: 24px;
+            margin-bottom: 10px;
+        }
+        h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--c-text);
+            margin-top: 18px;
+            margin-bottom: 8px;
+        }
+
+        p { margin-bottom: 12px; }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--c-border);
+            margin: 30px 0;
+        }
+
+        /* ── Lists ── */
+        ul, ol { padding-left: 22px; margin-bottom: 12px; }
+        li { margin-bottom: 6px; }
+        li strong { color: var(--c-heading); }
+
+        /* ── Tables ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 14px 0 20px;
+            font-size: 0.88rem;
+        }
+        thead th {
+            background: var(--c-primary);
+            color: #fff;
+            font-weight: 600;
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        tbody td {
+            padding: 9px 14px;
+            border-bottom: 1px solid var(--c-border);
+            vertical-align: top;
+        }
+        tbody tr:nth-child(even) { background: #f8fafc; }
+        tbody tr:hover { background: var(--c-primary-light); }
+
+        /* ── Code ── */
+        code {
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 0.82rem;
+            background: var(--c-code-bg);
+            border: 1px solid var(--c-border);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #be185d;
+        }
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 16px 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 12px 0 18px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            line-height: 1.65;
+        }
+        pre code {
+            background: none;
+            border: none;
+            padding: 0;
+            color: inherit;
+            font-size: inherit;
+        }
+
+        /* ── Callout boxes ── */
+        .callout {
+            border-left: 4px solid var(--c-primary);
+            background: var(--c-primary-light);
+            padding: 14px 18px;
+            border-radius: 0 6px 6px 0;
+            margin: 14px 0 18px;
+            font-size: 0.92rem;
+        }
+
+        /* ── Schema boxes ── */
+        .schema-box {
+            background: #f1f5f9;
+            border: 1px solid var(--c-border);
+            border-radius: 8px;
+            padding: 18px 22px;
+            margin: 14px 0 18px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            line-height: 1.6;
+        }
+        .schema-box .table-name {
+            font-weight: 700;
+            color: var(--c-primary);
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+        .schema-box .col-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+        }
+        .schema-box .col-name { color: var(--c-heading); font-weight: 500; }
+        .schema-box .col-type { color: var(--c-text-muted); }
+
+        /* ── File tree ── */
+        .file-tree {
+            background: #1e293b;
+            color: #94a3b8;
+            padding: 18px 22px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            line-height: 1.7;
+            margin: 14px 0 18px;
+        }
+        .file-tree .dir { color: #38bdf8; font-weight: 600; }
+        .file-tree .file { color: #e2e8f0; }
+        .file-tree .desc { color: #64748b; }
+
+        /* ── Pipeline diagram ── */
+        .pipeline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0;
+            align-items: center;
+            justify-content: center;
+            margin: 16px 0 20px;
+        }
+        .pipeline .stage {
+            background: var(--c-primary);
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        .pipeline .arrow {
+            color: var(--c-text-muted);
+            font-size: 1.1rem;
+            padding: 0 6px;
+        }
+
+        /* ── Print styles ── */
+        @media print {
+            body { font-size: 12px; }
+            .page { padding: 20px 30px; max-width: 100%; }
+            .cover { padding: 30px 0 20px; }
+            h2 { break-after: avoid; }
+            table, pre, .schema-box, .file-tree { break-inside: avoid; }
+            .no-print { display: none; }
+        }
+
+        /* Floating print button */
+        .print-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--c-primary);
+            color: #fff;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 50px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(42,146,140,0.35);
+            transition: all 0.2s;
+            z-index: 999;
+        }
+        .print-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(42,146,140,0.45);
+        }
+    </style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">&#128438; Save as PDF</button>
+
+<div class="page">
+
+    <!-- ═══════════ COVER ═══════════ -->
+    <div class="cover">
+        <h1>DocVCS — Project Report</h1>
+        <div class="subtitle">Localized Document Version Control &amp; Collaboration System</div>
+        <div class="meta">Comprehensive Technical Documentation &bull; April 2026</div>
+    </div>
+
+    <!-- ═══════════ §1 ═══════════ -->
+    <h2>1. Executive Summary</h2>
+    <p>
+        <strong>DocVCS</strong> is a fully self-contained, web-based document version control system engineered to deliver
+        Google&nbsp;Docs-level real-time collaboration and Git-level versioning granularity — entirely within the boundaries
+        of a local network. It runs as a lightweight Python server, stores all data in a single local SQLite file, and
+        requires zero external cloud infrastructure.
+    </p>
+    <p>
+        The system implements <strong>three custom-built algorithms from scratch</strong> — a Dynamic Programming LCS diffing engine,
+        a Three-Way Block Merge conflict resolver, and an Extractive NLP Summarizer — to provide intelligent document tracking,
+        concurrent-edit safety, and AI-powered content summarization without ever transmitting data to third-party services.
+    </p>
+
+    <!-- ═══════════ §2 ═══════════ -->
+    <h2>2. Problem Statement &amp; Rationale</h2>
+
+    <h3>The Problem</h3>
+    <p>In educational institutions, small teams, and privacy-sensitive environments, multiple users frequently need to collaboratively
+    edit text documents. The existing solutions present significant trade-offs:</p>
+
+    <table>
+        <thead><tr><th>Solution</th><th>Limitation</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Google Docs / Microsoft 365</strong></td><td>Requires constant internet. Data stored on third-party cloud servers — unacceptable for sensitive IP, academic integrity, or air-gapped environments.</td></tr>
+            <tr><td><strong>Git / GitHub</strong></td><td>Extremely steep learning curve for non-technical users (writers, students, researchers). Command-line driven. Not designed for prose documents.</td></tr>
+            <tr><td><strong>Email / USB Sharing</strong></td><td>No version tracking. Overwrites are permanent. No conflict detection. Manual reconciliation of edits.</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Why DocVCS Is Needed</h3>
+    <ul>
+        <li><strong>Complete Data Sovereignty:</strong> Every byte stays on the host machine's <code>vcs.db</code> file. Zero network egress. Zero cloud dependency.</li>
+        <li><strong>Zero Learning Curve:</strong> A polished web UI accessible from any browser — phones, tablets, laptops — on the same Wi-Fi / hotspot.</li>
+        <li><strong>Algorithmic Safety Net:</strong> Custom-built Dynamic Programming algorithms ensure concurrent edits never silently destroy data.</li>
+        <li><strong>Instant Deployment:</strong> A single <code>python app.py</code> command transforms any laptop into a collaboration server.</li>
+    </ul>
+
+    <!-- ═══════════ §3 ═══════════ -->
+    <h2>3. Complete Technology Stack</h2>
+
+    <h3>3.1 Backend — Python &amp; Flask</h3>
+    <table>
+        <thead><tr><th>Component</th><th>Role</th><th>Details</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Python 3</strong></td><td>Core language</td><td>All algorithmic computation, routing logic, database interaction, and server orchestration.</td></tr>
+            <tr><td><strong>Flask</strong></td><td>WSGI micro-framework</td><td>Lightweight HTTP request routing. Maps URL endpoints to Python handler functions. Uses Jinja2 for server-side HTML templating.</td></tr>
+            <tr><td><strong>Flask-Login</strong></td><td>Session management</td><td>Manages user sessions via secure HTTP cookies. Provides the <code>@login_required</code> decorator to gate every route. Implements <code>UserMixin</code> for session serialization.</td></tr>
+            <tr><td><strong>Werkzeug</strong></td><td>Security utilities</td><td>Provides <code>generate_password_hash()</code> and <code>check_password_hash()</code> using the <strong>PBKDF2-SHA256</strong> algorithm with salting for password storage.</td></tr>
+            <tr><td><strong>Gunicorn</strong></td><td>Production WSGI server</td><td>Production-grade server alternative to Flask's built-in development server.</td></tr>
+        </tbody>
+    </table>
+
+    <div class="callout">
+        <strong>Server Binding:</strong> The application binds to <code>host='0.0.0.0'</code> on <code>port=5000</code> with <code>debug=True</code>,
+        making it accessible to any device on the same local network interface.
+    </div>
+
+    <h3>3.2 Database — SQLite3</h3>
+    <p><strong>Engine:</strong> SQLite3 — a serverless, zero-configuration, transactional SQL database engine. The entire database is a single portable file: <code>vcs.db</code>.</p>
+    <p><strong>Connection Management:</strong> <code>sqlite3.connect('vcs.db', check_same_thread=False)</code> with <code>conn.row_factory = sqlite3.Row</code> enabling dictionary-style column access on query results.</p>
+
+    <h4>Relational Schema (3 Tables)</h4>
+
+    <div class="schema-box">
+        <div class="table-name">users</div>
+        <div class="col-row"><span class="col-name">id</span><span class="col-type">INTEGER PRIMARY KEY AUTOINCREMENT</span></div>
+        <div class="col-row"><span class="col-name">username</span><span class="col-type">TEXT UNIQUE NOT NULL</span></div>
+        <div class="col-row"><span class="col-name">password_hash</span><span class="col-type">TEXT NOT NULL</span></div>
+        <br>
+        <div class="table-name">documents</div>
+        <div class="col-row"><span class="col-name">id</span><span class="col-type">INTEGER PRIMARY KEY AUTOINCREMENT</span></div>
+        <div class="col-row"><span class="col-name">title</span><span class="col-type">TEXT NOT NULL</span></div>
+        <div class="col-row"><span class="col-name">created_at</span><span class="col-type">DATETIME DEFAULT CURRENT_TIMESTAMP</span></div>
+        <br>
+        <div class="table-name">revisions</div>
+        <div class="col-row"><span class="col-name">id</span><span class="col-type">INTEGER PRIMARY KEY AUTOINCREMENT</span></div>
+        <div class="col-row"><span class="col-name">document_id</span><span class="col-type">INTEGER NOT NULL (FK → documents)</span></div>
+        <div class="col-row"><span class="col-name">version_number</span><span class="col-type">INTEGER NOT NULL</span></div>
+        <div class="col-row"><span class="col-name">content</span><span class="col-type">TEXT NOT NULL</span></div>
+        <div class="col-row"><span class="col-name">parent_id</span><span class="col-type">INTEGER (self-referencing FK)</span></div>
+        <div class="col-row"><span class="col-name">commit_message</span><span class="col-type">TEXT DEFAULT 'No commit message'</span></div>
+        <div class="col-row"><span class="col-name">timestamp</span><span class="col-type">DATETIME DEFAULT CURRENT_TIMESTAMP</span></div>
+    </div>
+
+    <h4>Key Design Decisions</h4>
+    <ul>
+        <li><code>parent_id</code> in <strong>revisions</strong> is a self-referencing foreign key. It creates a linked-list (or tree) of version ancestry, enabling the system to trace which revision a user was editing when they submitted — this is the backbone of concurrent-edit detection.</li>
+        <li>All timestamps use <code>CURRENT_TIMESTAMP</code> (UTC) and are converted to local time in queries via <code>datetime(timestamp, "localtime")</code>.</li>
+        <li><code>check_same_thread=False</code> is required because Flask serves multiple HTTP requests from different threads, while SQLite defaults to single-thread access.</li>
+    </ul>
+
+    <p><strong>Schema Migration:</strong> A dedicated <code>migrate.py</code> script handles backward-compatible <code>ALTER TABLE</code> operations (e.g., adding the <code>commit_message</code> column) with graceful error handling via <code>sqlite3.OperationalError</code> catch.</p>
+
+    <h3>3.3 Frontend — HTML5, CSS3, JavaScript (ES6)</h3>
+    <table>
+        <thead><tr><th>Component</th><th>Version</th><th>Role</th></tr></thead>
+        <tbody>
+            <tr><td><strong>HTML5</strong></td><td>—</td><td>Semantic document structure via Jinja2 templates</td></tr>
+            <tr><td><strong>CSS3</strong></td><td>—</td><td>Custom styles for diff coloring, timeline visualization, toast animations, navbar theming</td></tr>
+            <tr><td><strong>JavaScript ES6</strong></td><td>—</td><td>Async <code>fetch()</code> API for search, Bootstrap modal event listeners for summarization, theme persistence via <code>localStorage</code>, debounced input handlers</td></tr>
+            <tr><td><strong>Bootstrap</strong></td><td>5.3.0</td><td>Responsive flexbox grid, cards, modals, dropdowns, badges, alerts, list-groups, form controls</td></tr>
+            <tr><td><strong>Bootstrap Icons</strong></td><td>1.11.1</td><td>SVG icon library for interface iconography</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Template Inheritance Architecture (Jinja2)</h4>
+    <p>All 11 templates extend a single <code>layout.html</code> base template which provides the full navbar, flash message system, search functionality, theme toggle, and all CDN includes.</p>
+
+    <div class="file-tree">
+        <span class="dir">layout.html</span> <span class="desc">(Base — 278 lines)</span><br>
+        ├── <span class="file">index.html</span> <span class="desc">— Document listing + Upload modal</span><br>
+        ├── <span class="file">view_doc.html</span> <span class="desc">— Document viewer + Summarize modal</span><br>
+        ├── <span class="file">new_doc.html</span> <span class="desc">— New document creation form</span><br>
+        ├── <span class="file">edit_doc.html</span> <span class="desc">— Edit form with parent_id tracking</span><br>
+        ├── <span class="file">history.html</span> <span class="desc">— Timeline view + Custom Compare sidebar</span><br>
+        ├── <span class="file">diff.html</span> <span class="desc">— Side-by-side diff table</span><br>
+        ├── <span class="file">merge.html</span> <span class="desc">— 3-way merge selector</span><br>
+        ├── <span class="file">merge_result.html</span> <span class="desc">— Conflict viewer + Resolution editor</span><br>
+        ├── <span class="file">login.html</span> <span class="desc">— User login form</span><br>
+        └── <span class="file">register.html</span> <span class="desc">— User registration form</span>
+    </div>
+
+    <h3>3.4 Dependencies (<code>requirements.txt</code>)</h3>
+    <pre><code>Flask
+Flask-Login
+Werkzeug
+gunicorn</code></pre>
+    <p>All algorithmic modules (<code>algo.py</code>) use only Python standard library imports (<code>re</code>, <code>collections.defaultdict</code>). <strong>Zero external NLP or ML libraries are required.</strong></p>
+
+    <!-- ═══════════ §4 ═══════════ -->
+    <h2>4. Algorithms — Deep Technical Breakdown</h2>
+
+    <h3>4.1 Longest Common Subsequence (LCS) — Dynamic Programming</h3>
+    <p><strong>Purpose:</strong> Powers the diff engine. Given two sequences of lines (old document vs. new document), LCS identifies which lines are shared (unchanged), which exist only in the old (deleted), and which exist only in the new (inserted).</p>
+
+    <p><strong>Implementation:</strong> <code>algo.py → lcs()</code></p>
+    <table>
+        <thead><tr><th>Property</th><th>Value</th></tr></thead>
+        <tbody>
+            <tr><td>Algorithm</td><td>Bottom-Up Dynamic Programming</td></tr>
+            <tr><td>Time Complexity</td><td>O(m × n) where m = len(old), n = len(new)</td></tr>
+            <tr><td>Space Complexity</td><td>O(m × n) — full 2D matrix stored</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Step-by-Step Execution</h4>
+    <ol>
+        <li>Construct a 2D matrix <code>L[m+1][n+1]</code> initialized to zeros.</li>
+        <li>For each pair <code>(i, j)</code>:
+            <ul>
+                <li>If <code>old_lines[i-1] == new_lines[j-1]</code> → <code>L[i][j] = L[i-1][j-1] + 1</code> (extend the matching subsequence)</li>
+                <li>Otherwise → <code>L[i][j] = max(L[i-1][j], L[i][j-1])</code> (take the better of skipping one line from either sequence)</li>
+            </ul>
+        </li>
+        <li>Return the completed matrix <code>L</code>.</li>
+    </ol>
+
+    <h4>Backtracking (<code>algo.py → get_diff()</code>)</h4>
+    <p>Starting from <code>L[m][n]</code>, the algorithm traces backward:</p>
+    <ul>
+        <li>If lines match → emit <code>('equal', line)</code>, move diagonally <code>(i-1, j-1)</code></li>
+        <li>If <code>L[i-1][j] &gt; L[i][j-1]</code> → emit <code>('delete', old_line)</code>, move up <code>(i-1, j)</code></li>
+        <li>Otherwise → emit <code>('insert', new_line)</code>, move left <code>(i, j-1)</code></li>
+        <li>Remaining lines in either sequence are emitted as pure deletions or insertions.</li>
+        <li>The result is reversed to produce the diff in forward order.</li>
+    </ul>
+
+    <h3>4.2 Side-by-Side Diff Rendering</h3>
+    <p><strong>Implementation:</strong> <code>algo.py → get_side_by_side_diff()</code></p>
+    <p>Takes the raw diff output and transforms it into a structured list suitable for tabular HTML rendering:</p>
+    <table>
+        <thead><tr><th>Diff Type</th><th>Left Column</th><th>Right Column</th><th>Visual Effect</th></tr></thead>
+        <tbody>
+            <tr><td><code>equal</code></td><td>Old line + line number</td><td>Same line + line number</td><td>Neutral background</td></tr>
+            <tr><td><code>delete</code></td><td>Old line + line number</td><td>Empty</td><td style="color:#ef4444;font-weight:600;">Red background (left)</td></tr>
+            <tr><td><code>insert</code></td><td>Empty</td><td>New line + line number</td><td style="color:#22c55e;font-weight:600;">Green background (right)</td></tr>
+            <tr><td><code>replace</code></td><td>Old line + line number</td><td>New line + line number</td><td style="color:#eab308;font-weight:600;">Red left, Green right</td></tr>
+        </tbody>
+    </table>
+    <p><strong>Replace Detection:</strong> When a <code>delete</code> operation is immediately followed by an <code>insert</code> in the diff stream, the algorithm combines them into a single <code>replace</code> row — visually showing the old and new text side-by-side on the same row for clearer readability.</p>
+
+    <h3>4.3 Chunk-Based Diff Extraction (for Merge)</h3>
+    <p><strong>Implementation:</strong> <code>algo.py → get_chunks()</code></p>
+    <p>Converts a raw diff into "chunks" — contiguous groups of changes anchored to base-document line indices. Each chunk records:</p>
+    <ul>
+        <li><code>base_start</code> / <code>base_end</code>: The range of base lines this change replaces</li>
+        <li><code>lines[]</code>: The new lines being inserted in place of the base range</li>
+        <li><code>source</code>: Tagged as <code>'mine'</code> or <code>'theirs'</code> during merge</li>
+    </ul>
+    <p>This is the atomic unit the merge algorithm operates on.</p>
+
+    <h3>4.4 Three-Way Block Merge with Conflict Detection</h3>
+    <p><strong>Implementation:</strong> <code>algo.py → basic_merge()</code></p>
+
+    <div class="callout">
+        <strong>The concurrency problem:</strong> Two users (A and B) both begin editing the same base revision.
+        User B saves first. When User A tries to save, their <code>parent_id</code> no longer matches the latest revision
+        in the database — the system detects an outdated edit.
+    </div>
+
+    <h4>Algorithm Flow</h4>
+    <pre><code>Input:  base_content, mine_content (User A), theirs_content (User B)
+Output: merged_content, has_conflict (boolean)</code></pre>
+
+    <ol>
+        <li><strong>Fast-path shortcuts:</strong>
+            <ul>
+                <li><code>mine == theirs</code> → return either (identical edits)</li>
+                <li><code>mine == base</code> → return <code>theirs</code> (only B changed)</li>
+                <li><code>theirs == base</code> → return <code>mine</code> (only A changed)</li>
+            </ul>
+        </li>
+        <li><strong>Chunk extraction:</strong> Extract <code>mine_chunks</code> and <code>theirs_chunks</code> from their respective diffs against the base. Tag each with its source.</li>
+        <li><strong>Sorted merge:</strong> Combine and sort all chunks by <code>base_start</code>. Iterate through them, building "conflict groups" by greedily absorbing any subsequent overlapping chunks.</li>
+        <li><strong>Overlap detection:</strong>
+            <pre><code>def overlap(a, b):
+    if max(a['base_start'], b['base_start']) < min(a['base_end'], b['base_end']): return True
+    if a['base_start'] == b['base_start'] == a['base_end'] == b['base_end']: return True
+    return False</code></pre>
+        </li>
+        <li><strong>Resolution:</strong>
+            <ul>
+                <li>Conflict group from <strong>both</strong> sources with <strong>different content</strong> → <strong>CONFLICT</strong>. Wrap in Git-style markers: <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; CURRENT VERSION ... ======= ... &gt;&gt;&gt;&gt;&gt;&gt;&gt; INCOMING VERSION</code></li>
+                <li>Chunks from both sources with <strong>identical content &amp; positions</strong> → deduplicate</li>
+                <li>Chunks from a <strong>single source</strong> → apply cleanly</li>
+                <li>Unchanged base lines between chunks → copied verbatim</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h3>4.5 Extractive AI Summarization (NLP Pipeline)</h3>
+    <p><strong>Implementation:</strong> <code>algo.py → summarize_text()</code></p>
+    <p>A fully offline, privacy-preserving text summarization algorithm using extractive NLP techniques. <strong>No external AI APIs. No internet required.</strong></p>
+
+    <h4>Pipeline Stages</h4>
+    <div class="pipeline">
+        <span class="stage">Raw Text</span><span class="arrow">→</span>
+        <span class="stage">Sentence Splitting</span><span class="arrow">→</span>
+        <span class="stage">Stop-Word Filtering</span><span class="arrow">→</span>
+        <span class="stage">TF Scoring</span><span class="arrow">→</span>
+        <span class="stage">Normalization</span><span class="arrow">→</span>
+        <span class="stage">Sentence Scoring</span><span class="arrow">→</span>
+        <span class="stage">Top-K Extraction</span>
+    </div>
+
+    <p><strong>Stage 1 — Sentence Tokenization:</strong> Uses a regex lookbehind <code>(?&lt;=[.!?])\s+</code> to split on sentence-ending punctuation followed by whitespace. Filters out fragments shorter than 5 characters.</p>
+
+    <p><strong>Stage 2 — Stop-Word Filtering:</strong> A curated set of 30 high-frequency English function words (<code>the</code>, <code>is</code>, <code>in</code>, <code>and</code>, <code>to</code>, <code>of</code>, <code>a</code>, <code>it</code>, <code>that</code>, <code>this</code>, etc.) are excluded from frequency analysis. These words carry minimal semantic weight.</p>
+
+    <p><strong>Stage 3 — Term Frequency (TF) Computation:</strong> Extracts alphabetic tokens of length ≥ 2, case-normalized, and increments their global frequency count using <code>collections.defaultdict</code>.</p>
+
+    <p><strong>Stage 4 — Frequency Normalization:</strong> All word scores are normalized to a <code>[0, 1]</code> range relative to the most frequent meaningful term: <code>word_freq[w] /= max_frequency</code>.</p>
+
+    <p><strong>Stage 5 — Sentence Scoring with Positional Bias:</strong></p>
+    <pre><code>sentence_scores[i] += word_frequencies[word] + (0.1 / (i + 1))</code></pre>
+    <p>Each sentence receives a cumulative score based on its word weights. A small positional bias <code>0.1 / (i + 1)</code> slightly favors earlier sentences — reflecting the "inverted pyramid" convention that opening sentences tend to be more topically important.</p>
+
+    <p><strong>Stage 6 — Top-K Extraction:</strong> The top <code>num_sentences</code> (default: 4) highest-scoring sentences are selected. Their <strong>original order</strong> in the document is preserved (sorted by index, not score) to maintain logical flow.</p>
+
+    <!-- ═══════════ §5 ═══════════ -->
+    <h2>5. Application Routes — Complete API Surface</h2>
+
+    <h3>5.1 Authentication Routes</h3>
+    <table>
+        <thead><tr><th>Method</th><th>Endpoint</th><th>Function</th><th>Description</th></tr></thead>
+        <tbody>
+            <tr><td>GET/POST</td><td><code>/register</code></td><td><code>register()</code></td><td>Registration form. On POST: checks username uniqueness, hashes password via PBKDF2-SHA256, inserts into <code>users</code> table.</td></tr>
+            <tr><td>GET/POST</td><td><code>/login</code></td><td><code>login()</code></td><td>Login form. On POST: validates credentials via <code>check_password_hash()</code>, creates session via <code>login_user()</code>.</td></tr>
+            <tr><td>GET</td><td><code>/logout</code></td><td><code>logout()</code></td><td>Destroys session via <code>logout_user()</code>. Redirects to login.</td></tr>
+        </tbody>
+    </table>
+
+    <h3>5.2 Document CRUD Routes</h3>
+    <table>
+        <thead><tr><th>Method</th><th>Endpoint</th><th>Function</th><th>Description</th></tr></thead>
+        <tbody>
+            <tr><td>GET</td><td><code>/</code></td><td><code>index()</code></td><td>Dashboard. Queries all documents with latest revision timestamp via aggregate join. Sorted by most recently updated.</td></tr>
+            <tr><td>GET/POST</td><td><code>/doc/new</code></td><td><code>new_doc()</code></td><td>Create document form. On POST: inserts into <code>documents</code>, creates initial revision with <code>version_number=1</code>.</td></tr>
+            <tr><td>POST</td><td><code>/upload</code></td><td><code>upload_doc()</code></td><td>File upload handler. Accepts <code>.txt/.md/.csv/.json</code> via <code>multipart/form-data</code>. Decodes UTF-8. Custom title or filename fallback.</td></tr>
+            <tr><td>GET</td><td><code>/doc/&lt;id&gt;</code></td><td><code>view_doc()</code></td><td>Displays latest revision content. Action buttons: Edit, History, Merge Tools, Download, Summarize.</td></tr>
+            <tr><td>GET/POST</td><td><code>/doc/&lt;id&gt;/edit</code></td><td><code>edit_doc()</code></td><td>Edit form with hidden <code>parent_id</code>. On POST: checks if <code>parent_id</code> matches actual latest revision. Mismatch triggers 3-way merge.</td></tr>
+            <tr><td>GET</td><td><code>/doc/&lt;id&gt;/history</code></td><td><code>history()</code></td><td>CSS timeline of all revisions with commit messages, timestamps, diff links, per-version download. Custom Compare sidebar.</td></tr>
+            <tr><td>GET</td><td><code>/doc/&lt;id&gt;/diff</code></td><td><code>diff_view()</code></td><td>Accepts <code>target</code> and optional <code>compare_to</code> revision IDs. Runs side-by-side diff. Auto-diffs against <code>parent_id</code> if only target provided.</td></tr>
+            <tr><td>GET/POST</td><td><code>/doc/&lt;id&gt;/merge</code></td><td><code>merge_view()</code></td><td>Manual merge tool. Select Base/Mine/Theirs revisions from dropdowns. On POST: runs <code>basic_merge()</code>.</td></tr>
+            <tr><td>GET</td><td><code>/doc/&lt;id&gt;/download</code></td><td><code>download_doc()</code></td><td>Downloads revision as <code>.txt</code>. Sanitizes filename. Sets <code>Content-disposition: attachment</code> header.</td></tr>
+        </tbody>
+    </table>
+
+    <h3>5.3 API Routes (JSON)</h3>
+    <table>
+        <thead><tr><th>Method</th><th>Endpoint</th><th>Function</th><th>Description</th></tr></thead>
+        <tbody>
+            <tr><td>GET</td><td><code>/api/search</code></td><td><code>api_search()</code></td><td>If no <code>doc_id</code>: searches document titles via <code>LIKE</code>. With <code>doc_id</code>: searches revision commit messages &amp; version numbers. Supports <code>v</code> prefix stripping.</td></tr>
+            <tr><td>GET</td><td><code>/api/doc/&lt;id&gt;/summarize</code></td><td><code>api_summarize_doc()</code></td><td>Fetches latest revision content, runs <code>summarize_text()</code>, returns JSON <code>{"summary": "..."}</code>.</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ═══════════ §6 ═══════════ -->
+    <h2>6. Frontend Systems — Detailed Mechanics</h2>
+
+    <h3>6.1 Navbar &amp; Branding</h3>
+    <ul>
+        <li>Custom teal (<code>#2a928c</code>) navbar background with inline SVG document icon as logo</li>
+        <li>Centered search bar with translucent <code>rgba(255,255,255,0.15)</code> background and <code>Ctrl+K</code> badge</li>
+        <li>GitHub source link, version badge (<code>v1.0</code>), vertical dividers, user display, and theme dropdown</li>
+    </ul>
+
+    <h3>6.2 Toast Notification System</h3>
+    <p>Flash messages from Flask are rendered as Bootstrap alerts with a custom <strong>SVG countdown timer animation</strong>:</p>
+    <ul>
+        <li>An SVG <code>&lt;path&gt;</code> draws a circle using <code>stroke-dasharray: 100, 100</code></li>
+        <li>A CSS <code>@keyframes countdown</code> animation sweeps <code>stroke-dashoffset</code> from <code>0 → 100</code> over 5 seconds</li>
+        <li>A <code>setTimeout(5000)</code> JavaScript call triggers <code>bootstrap.Alert.close()</code> for synchronized auto-dismissal</li>
+    </ul>
+
+    <h3>6.3 Global Spotlight Search</h3>
+    <ul>
+        <li><strong>Trigger:</strong> <code>Ctrl+K</code> keyboard shortcut or direct click</li>
+        <li><strong>Debounce:</strong> 250ms <code>setTimeout</code> debounce on input events</li>
+        <li><strong>Context-Aware:</strong> Extracts <code>doc_id</code> from the current URL via regex. On dashboard → searches document titles globally. Inside a document → searches revision commit messages and version numbers.</li>
+        <li><strong>Rendering:</strong> Dynamically builds dropdown items with Bootstrap Icons</li>
+        <li><strong>Dismissal:</strong> Click-outside handler hides dropdown</li>
+    </ul>
+
+    <h3>6.4 Theme Persistence</h3>
+    <ul>
+        <li>Bootstrap 5.3 <code>data-bs-theme</code> attribute toggling between <code>"light"</code> and <code>"dark"</code></li>
+        <li>User preference stored in <code>localStorage</code> and applied immediately on page load</li>
+        <li>Diff colors have dedicated dark-mode CSS overrides using <code>[data-bs-theme="dark"]</code> selectors</li>
+    </ul>
+
+    <h3>6.5 AI Summarization Modal</h3>
+    <ul>
+        <li>Triggered by the "Summarize" button on <code>view_doc.html</code></li>
+        <li>Uses Bootstrap 5 Modal with <code>show.bs.modal</code> event listener</li>
+        <li>Shows spinner loading state → fires async <code>fetch()</code> to <code>/api/doc/&lt;id&gt;/summarize</code> → renders styled summary</li>
+    </ul>
+
+    <h3>6.6 Version History Timeline</h3>
+    <ul>
+        <li>Pure CSS timeline using <code>::before</code> pseudo-elements with vertical line and circular node markers</li>
+        <li>Each node shows version number, commit message, timestamp badge, diff link, and download button</li>
+    </ul>
+
+    <h3>6.7 Conflict Resolution Viewer</h3>
+    <ul>
+        <li>JavaScript regex replaces escape-encoded Git markers with color-coded Bootstrap-styled blocks: Red banner (CURRENT), Yellow separator, Green banner (INCOMING)</li>
+        <li>Below the viewer: a <code>&lt;textarea&gt;</code> pre-filled with conflict content for manual resolution</li>
+    </ul>
+
+    <!-- ═══════════ §7 ═══════════ -->
+    <h2>7. File Structure &amp; Project Architecture</h2>
+    <div class="file-tree">
+        <span class="dir">doc_ver_control/</span><br>
+        ├── <span class="file">app.py</span> <span class="desc">— Flask application (419 lines). All 15 routes, auth, session management.</span><br>
+        ├── <span class="file">algo.py</span> <span class="desc">— Algorithm module (254 lines). LCS, diff, merge, summarization.</span><br>
+        ├── <span class="file">database.py</span> <span class="desc">— Database module (38 lines). Connection factory, schema initialization.</span><br>
+        ├── <span class="file">migrate.py</span> <span class="desc">— Schema migration script (16 lines). ALTER TABLE operations.</span><br>
+        ├── <span class="file">requirements.txt</span> <span class="desc">— Python dependencies (4 packages).</span><br>
+        ├── <span class="file">.gitignore</span> <span class="desc">— Excludes venv/, __pycache__/, vcs.db, OS files.</span><br>
+        ├── <span class="file">readme.md</span> <span class="desc">— Quick-start documentation.</span><br>
+        ├── <span class="file">notes.md</span> <span class="desc">— Detailed project notes &amp; writeup.</span><br>
+        ├── <span class="file">vcs.db</span> <span class="desc">— SQLite database file (runtime-generated, gitignored).</span><br>
+        ├── <span class="dir">venv/</span> <span class="desc">— Python virtual environment (gitignored).</span><br>
+        └── <span class="dir">templates/</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">layout.html</span> <span class="desc">— Base template (278 lines). Navbar, flash system, search, theme toggle.</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">index.html</span> <span class="desc">— Document dashboard + upload modal.</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">view_doc.html</span> <span class="desc">— Document reader + summarize modal.</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">new_doc.html</span> <span class="desc">— New document creation form.</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">edit_doc.html</span> <span class="desc">— Edit form with version tracking.</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">history.html</span> <span class="desc">— Timeline view + custom compare tool.</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">diff.html</span> <span class="desc">— Side-by-side diff table with color coding.</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">merge.html</span> <span class="desc">— 3-way merge revision selector.</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">merge_result.html</span> <span class="desc">— Conflict visual viewer + manual editor.</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">login.html</span> <span class="desc">— User login form.</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;└── <span class="file">register.html</span> <span class="desc">— User registration form.</span>
+    </div>
+
+    <!-- ═══════════ §8 ═══════════ -->
+    <h2>8. Security Model</h2>
+    <table>
+        <thead><tr><th>Layer</th><th>Mechanism</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Password Storage</strong></td><td>PBKDF2-SHA256 with random salt via <code>werkzeug.security.generate_password_hash()</code>. Raw passwords are never stored.</td></tr>
+            <tr><td><strong>Session Management</strong></td><td>Flask-Login manages server-side sessions via signed cookies. <code>app.secret_key</code> signs session tokens.</td></tr>
+            <tr><td><strong>Route Protection</strong></td><td>Every document-related route is decorated with <code>@login_required</code>. Unauthenticated requests redirect to <code>/login</code>.</td></tr>
+            <tr><td><strong>Input Validation</strong></td><td>Username uniqueness via SQL <code>UNIQUE</code> constraint + pre-insert check. File uploads restricted to UTF-8. Filename sanitization strips non-alphanumeric characters.</td></tr>
+            <tr><td><strong>Data Isolation</strong></td><td><code>vcs.db</code> is gitignored — credentials and documents are never committed to version control.</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ═══════════ §9 ═══════════ -->
+    <h2>9. Deployment &amp; Network Access</h2>
+    <table>
+        <thead><tr><th>Mode</th><th>Address</th><th>Use Case</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Host-local</strong></td><td><code>http://localhost:5000</code></td><td>The machine running the server</td></tr>
+            <tr><td><strong>LAN / Hotspot</strong></td><td><code>http://&lt;HOST_IPv4&gt;:5000</code></td><td>Any device on the same network. Host IPv4 via <code>ipconfig</code>.</td></tr>
+        </tbody>
+    </table>
+
+    <h4>Startup Procedure</h4>
+    <pre><code>1. cd doc_ver_control
+2. .\venv\Scripts\activate         # Activate virtual environment
+3. python app.py                   # Starts Flask on 0.0.0.0:5000</code></pre>
+
+    <!-- ═══════════ §10 ═══════════ -->
+    <h2>10. Target Audience &amp; Use Cases</h2>
+    <ul>
+        <li><strong>Students:</strong> Collaborative essay writing or lab report editing over a shared hotspot; no institutional cloud required.</li>
+        <li><strong>Writers &amp; Editors:</strong> Track manuscript revisions with full diff history and commit messages. Revert to any past version.</li>
+        <li><strong>Small Teams:</strong> Simultaneous editing with automatic merge — conflict markers only appear when edits overlap.</li>
+        <li><strong>Privacy-Sensitive Environments:</strong> Air-gapped or restricted networks where data must never leave the local machine.</li>
+        <li><strong>Educational Projects:</strong> The codebase itself serves as a teaching tool for Dynamic Programming, web architecture, database design, and NLP techniques.</li>
+    </ul>
+
+    <!-- ═══════════ §11 ═══════════ -->
+    <h2>11. Summary of Algorithmic Complexity</h2>
+    <table>
+        <thead><tr><th>Algorithm</th><th>Time Complexity</th><th>Space Complexity</th><th>Location</th></tr></thead>
+        <tbody>
+            <tr><td>LCS Matrix Construction</td><td>O(m × n)</td><td>O(m × n)</td><td><code>algo.py → lcs()</code></td></tr>
+            <tr><td>Diff Backtracking</td><td>O(m + n)</td><td>O(m + n)</td><td><code>algo.py → get_diff()</code></td></tr>
+            <tr><td>Side-by-Side Transform</td><td>O(d) — d = diff length</td><td>O(d)</td><td><code>algo.py → get_side_by_side_diff()</code></td></tr>
+            <tr><td>Chunk Extraction</td><td>O(d)</td><td>O(c) — c = chunks</td><td><code>algo.py → get_chunks()</code></td></tr>
+            <tr><td>Three-Way Merge</td><td>O(c²) worst case</td><td>O(c)</td><td><code>algo.py → basic_merge()</code></td></tr>
+            <tr><td>Extractive Summarization</td><td>O(s × w) — s = sentences</td><td>O(w + s)</td><td><code>algo.py → summarize_text()</code></td></tr>
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>

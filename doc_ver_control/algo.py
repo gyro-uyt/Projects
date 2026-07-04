@@ -251,3 +251,4 @@ def summarize_text(text, num_sentences=4):
 
     summarized_text = " ".join([sentences[idx] for idx in top_sentences_indices])
     return summarized_text
+ 
