@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Arcly — Interactive 24-hour clock time tracker. Drag on the clock to log your daily activities.">
+  <title>Arcly — Daily Time Tracker</title>
+  
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" href="assets/favicon/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon/favicon.svg" />
+  <link rel="shortcut icon" href="assets/favicon/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="Arcly" />
+  <link rel="manifest" href="assets/favicon/site.webmanifest" />
+  <meta name="theme-color" content="#151827" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>⏳ Arcly</h1>
+      <p>Drag on the clock to track your day</p>
+    </header>
+
+    <div class="main-layout">
+      <!-- Clock -->
+      <div class="clock-panel">
+        <div class="clock-wrap" id="clockWrap">
+          <canvas id="clockCanvas" width="480" height="480"></canvas>
+          <div class="clock-tooltip" id="tooltip"></div>
+        </div>
+        <div class="clock-help">
+          <span>Click</span> &amp; <span>Drag</span> on the clock edge to log an activity
+        </div>
+      </div>
+
+      <!-- Activity List -->
+      <div class="activities-panel">
+        <div class="activities-header">
+          <h2>Activities</h2>
+          <span class="activities-count" id="activityCount">0</span>
+        </div>
+        <div class="activities-list" id="activityList">
+          <div class="empty-state" id="emptyState">
+            <div class="icon">🕐</div>
+            <p>No activities yet.<br>Drag on the clock to get started!</p>
+          </div>
+        </div>
+        <button class="clear-all-btn" id="clearAllBtn" style="display:none;">Clear All Activities</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h3>Log Activity</h3>
+      <p class="modal-time" id="modalTime">1:00 AM — 3:00 AM</p>
+
+      <label for="activityInput">What did you do?</label>
+      <input type="text" id="activityInput" placeholder="e.g. Studied physics, Played football…" maxlength="60" autocomplete="off">
+
+      <label>Category</label>
+      <div class="category-grid" id="categoryGrid"></div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" id="btnCancel">Cancel</button>
+        <button class="btn-save" id="btnSave">Save Activity</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('SW registered:', reg.scope))
+        .catch(err => console.warn('SW registration failed:', err));
+    }
+  </script>
+</body>
+</html>
